@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <style>
+    :root {
+      --bg-color: #f0f0f0;
+      --text-color: #333;
+      --btn-color: #4CAF50;
+      --highlight-color: #ff9800;
+      --highlight-text-color: #fff;
+      --btn-text-color: #fff;
+      --timer-color: #000;
+      --timer-font: 'Arial', sans-serif;
+      --embed-width: 300px;
+      --embed-height: 200px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #timer {
+      font-size: 48px;
+      font-family: var(--timer-font);
+      color: var(--timer-color);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      border: none;
+      margin: 0 5px;
+      transition: background-color 0.3s;
+      border-radius: 25px;
+      font-size: 16px;
+    }
+
+    .tab:hover {
+      background-color: #45a049;
+    }
+
+    .tab.active {
+      background-color: var(--highlight-color);
+      color: var(--highlight-text-color);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .section-button {
+      background-color: #f0f0f0;
+      color: var(--highlight-color);
+      border: 1px solid var(--highlight-color);
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      margin: 5px 0;
+      border-radius: 25px;
+    }
+
+    .section-content {
+      display: none;
+      margin-top: 10px;
+      padding-left: 10px;
+    }
+
+    .section-content.visible {
+      display: block;
+    }
+
+    .option-group {
+      margin: 10px 0;
+    }
+
+    .option-group label {
+      margin-right: 10px;
+    }
+
+    .option-group input {
+      padding: 5px;
+      width: 120px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .center-align {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .apply-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="pomodoroApp">
+    <div class="tabs">
+      <div class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</div>
+      <div class="tab short" onclick="switchMode('short')">𝐒𝐡𝐨𝐫𝐭 𝐁𝐫𝐞𝐚𝐤</div>
+      <div class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</div>
+    </div>
+    <div id="timer">25:00</div>
+    <div class="button-container">
+      <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
+      <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
+      <button class="btn" onclick="toggleOptions()">𝙾𝙿𝚃𝙸𝙾𝙽𝚂</button>
+    </div>
+  </div>
+
+  <div id="optionsPanel" style="display:none; margin-top: 20px; width: 100%; max-width: 400px;">
+    <button class="section-button" onclick="toggleSection('timeSettings')">시간 설정</button>
+    <div id="timeSettings" class="section-content">
+      <div class="option-group">
+        <label for="pomodoroTime">Pomodoro 시간 (분):</label>
+        <input type="number" id="pomodoroTime" value="25">
+      </div>
+      <div class="option-group">
+        <label for="shortTime">짧은 휴식 (분):</label>
+        <input type="number" id="shortTime" value="5">
+      </div>
+      <div class="option-group">
+        <label for="longTime">긴 휴식 (분):</label>
+        <input type="number" id="longTime" value="15">
+      </div>
+    </div>
+
+    <button class="section-button" onclick="toggleSection('colorSettings')">색상 설정</button>
+    <div id="colorSettings" class="section-content">
+      <div class="option-group">
+        <label for="bgColor">배경 색상:</label>
+        <input type="color" id="bgColor" value="#f0f0f0">
+      </div>
+      <div class="option-group">
+        <label for="btnColor">버튼 색상:</label>
+        <input type="color" id="btnColor" value="#4CAF50">
+      </div>
+      <div class="option-group">
+        <label for="highlightColor">버튼 강조 색상:</label>
+        <input type="color" id="highlightColor" value="#ff9800">
+      </div>
+      <div class="option-group">
+        <label for="btnTextColor">버튼 텍스트 색상:</label>
+        <input type="color" id="btnTextColor" value="#ffffff">
+      </div>
+      <div class="option-group">
+        <label for="timerColor">타이머 색상:</label>
+        <input type="color" id="timerColor" value="#000000">
+      </div>
+    </div>
+
+    <button class="section-button" onclick="toggleSection('embedSettings')">임베드 크기 설정</button>
+    <div id="embedSettings" class="section-content">
+      <div class="option-group">
+        <label for="embedWidth">넓이 (px):</label>
+        <input type="number" id="embedWidth" value="300">
+      </div>
+      <div class="option-group">
+        <label for="embedHeight">높이 (px):</label>
+        <input type="number" id="embedHeight" value="200">
+      </div>
+    </div>
+
+    <div class="apply-btn-wrapper">
+      <button class="btn" onclick="applyOptions()">적용</button>
+    </div>
+  </div>
+
+  <script>
+    let timeLeft;
+    let timerInterval;
+    let isRunning = false;
+    let currentMode = 'pomodoro';
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const duration = getDurationForMode(mode);
+      timeLeft = duration * 60;
+      updateTimerDisplay();
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.tab.${mode}`).classList.add('active');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+      }
+    }
+
+    function toggleTimer() {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+      } else {
+        isRunning = true;
+        document.getElementById('startBtn').innerText = '𝙿𝙰𝚄𝚂𝙴';
+        if (!timeLeft) {
+          timeLeft = getDurationForMode(currentMode) * 60;
+        }
+        timerInterval = setInterval(updateTimer, 1000);
+      }
+    }
+
+    function updateTimer() {
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+        alert('˚₊‧꒰ა 작업 끝 ໒꒱ ‧₊˚');
+      } else {
+        timeLeft--;
+        updateTimerDisplay();
+      }
+    }
+
+    function updateTimerDisplay() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      timeLeft = getDurationForMode(currentMode) * 60;
+      updateTimerDisplay();
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
+
+    function toggleOptions() {
+      const panel = document.getElementById('optionsPanel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleSection(id) {
+      const section = document.getElementById(id);
+      section.classList.toggle('visible');
+    }
+
+    function applyOptions() {
+      // 시간
+      resetTimer();
+
+      // 색상
+      document.documentElement.style.setProperty('--bg-color', document.getElementById('bgColor').value);
+      document.documentElement.style.setProperty('--btn-color', document.getElementById('btnColor').value);
+      document.documentElement.style.setProperty('--highlight-color', document.getElementById('highlightColor').value);
+      document.documentElement.style.setProperty('--btn-text-color', document.getElementById('btnTextColor').value);
+      document.documentElement.style.setProperty('--timer-color', document.getElementById('timerColor').value);
+
+      // 임베드
+      document.documentElement.style.setProperty('--embed-width', `${document.getElementById('embedWidth').value}px`);
+      document.documentElement.style.setProperty('--embed-height', `${document.getElementById('embedHeight').value}px`);
+    }
+
+    function getDurationForMode(mode) {
+      const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
+      const short = parseInt(document.getElementById('shortTime').value) || 5;
+      const long = parseInt(document.getElementById('longTime').value) || 15;
+      return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
+    }
+
+    switchMode(currentMode);
+  </script>
+</body>
+</html>
