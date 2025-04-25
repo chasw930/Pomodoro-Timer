@@ -9,6 +9,7 @@
       --bg-color: #f0f0f0;
       --text-color: #333;
       --btn-color: #4CAF50;
+      --btn-hover-color: #45a049;
       --highlight-color: #ff9800;
       --highlight-text-color: #fff;
       --btn-text-color: #fff;
@@ -16,6 +17,8 @@
       --timer-font: 'Arial', sans-serif;
       --embed-width: 300px;
       --embed-height: 200px;
+      --timer-font-size: 48px;
+      --btn-font-size: 16px;
     }
 
     body {
@@ -31,7 +34,7 @@
     }
 
     #timer {
-      font-size: 48px;
+      font-size: var(--timer-font-size);
       font-family: var(--timer-font);
       color: var(--timer-color);
       margin-bottom: 20px;
@@ -56,11 +59,14 @@
       margin: 0 5px;
       transition: background-color 0.3s;
       border-radius: 25px;
-      font-size: 16px;
+      font-size: var(--btn-font-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .tab:hover {
-      background-color: #45a049;
+      background-color: var(--btn-hover-color);
     }
 
     .tab.active {
@@ -82,16 +88,23 @@
       border: none;
       border-radius: 25px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: var(--btn-font-size);
       transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn:hover {
-      background-color: #45a049;
+      background-color: var(--btn-hover-color);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
     }
 
     .section-button {
-      background-color: #f0f0f0;
+      background-color: #fff;
       color: var(--highlight-color);
       border: 1px solid var(--highlight-color);
       padding: 10px;
@@ -99,13 +112,16 @@
       text-align: left;
       cursor: pointer;
       margin: 5px 0;
-      border-radius: 25px;
+      border-radius: 8px;
     }
 
     .section-content {
       display: none;
       margin-top: 10px;
-      padding-left: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
     }
 
     .section-content.visible {
@@ -125,10 +141,6 @@
       width: 120px;
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
     .center-align {
       display: flex;
       justify-content: center;
@@ -139,21 +151,27 @@
       display: flex;
       justify-content: center;
       margin-top: 20px;
+      gap: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="pomodoroApp">
-    <div class="tabs">
-      <div class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</div>
-      <div class="tab short" onclick="switchMode('short')">𝐒𝐡𝐨𝐫𝐭 𝐁𝐫𝐞𝐚𝐤</div>
-      <div class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</div>
-    </div>
-    <div id="timer">25:00</div>
-    <div class="button-container">
-      <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
-      <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
-      <button class="btn" onclick="toggleOptions()">𝙾𝙿𝚃𝙸𝙾𝙽𝚂</button>
+<div id="pomodoroApp">
+  <div class="tabs">
+    <button class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</button>
+    <button class="tab short" onclick="switchMode('short')">𝐒𝐡𝐨𝐫𝐭 𝐁𝐫𝐞𝐚𝐤</button>
+    <button class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</button>
+  </div>
+
+  <div id="timer">00:00</div>
+
+  <div class="button-container">
+    <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
+    <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
+    <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+  </div>
+</div>
+
     </div>
   </div>
 
@@ -185,6 +203,10 @@
         <input type="color" id="btnColor" value="#4CAF50">
       </div>
       <div class="option-group">
+        <label for="btnHoverColor">버튼 호버 색상:</label>
+        <input type="color" id="btnHoverColor" value="#45a049">
+      </div>
+      <div class="option-group">
         <label for="highlightColor">버튼 강조 색상:</label>
         <input type="color" id="highlightColor" value="#ff9800">
       </div>
@@ -195,6 +217,18 @@
       <div class="option-group">
         <label for="timerColor">타이머 색상:</label>
         <input type="color" id="timerColor" value="#000000">
+      </div>
+    </div>
+
+    <button class="section-button" onclick="toggleSection('textSettings')">텍스트 설정</button>
+    <div id="textSettings" class="section-content">
+      <div class="option-group">
+        <label for="btnFontSize">버튼 텍스트 크기 (px):</label>
+        <input type="number" id="btnFontSize" value="16">
+      </div>
+      <div class="option-group">
+        <label for="timerFontSize">타이머 숫자 크기 (px):</label>
+        <input type="number" id="timerFontSize" value="48">
       </div>
     </div>
 
@@ -212,6 +246,7 @@
 
     <div class="apply-btn-wrapper">
       <button class="btn" onclick="applyOptions()">적용</button>
+      <button class="btn" onclick="toggleOptions()">닫기</button>
     </div>
   </div>
 
@@ -255,7 +290,7 @@
         clearInterval(timerInterval);
         isRunning = false;
         document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
-        alert('˚₊‧꒰ა 작업 끝 ໒꒱ ‧₊˚');
+        alert('˚₊‧꒰า 작업 끝 ໒꒱ ‧₊˚');
       } else {
         timeLeft--;
         updateTimerDisplay();
@@ -287,19 +322,17 @@
     }
 
     function applyOptions() {
-      // 시간
       resetTimer();
-
-      // 색상
       document.documentElement.style.setProperty('--bg-color', document.getElementById('bgColor').value);
       document.documentElement.style.setProperty('--btn-color', document.getElementById('btnColor').value);
+      document.documentElement.style.setProperty('--btn-hover-color', document.getElementById('btnHoverColor').value);
       document.documentElement.style.setProperty('--highlight-color', document.getElementById('highlightColor').value);
       document.documentElement.style.setProperty('--btn-text-color', document.getElementById('btnTextColor').value);
       document.documentElement.style.setProperty('--timer-color', document.getElementById('timerColor').value);
-
-      // 임베드
       document.documentElement.style.setProperty('--embed-width', `${document.getElementById('embedWidth').value}px`);
       document.documentElement.style.setProperty('--embed-height', `${document.getElementById('embedHeight').value}px`);
+      document.documentElement.style.setProperty('--btn-font-size', `${document.getElementById('btnFontSize').value}px`);
+      document.documentElement.style.setProperty('--timer-font-size', `${document.getElementById('timerFontSize').value}px`);
     }
 
     function getDurationForMode(mode) {
