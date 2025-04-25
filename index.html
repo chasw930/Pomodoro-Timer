@@ -317,31 +317,37 @@
     section.classList.toggle('visible');
   }
 
-  function applyOptions() {
-    resetTimer();
-    const savedStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
-    const styleMap = {
-      '--bg-color': document.getElementById('bgColor').value || savedStyles['--bg-color'],
-      '--btn-color': document.getElementById('btnColor').value || savedStyles['--btn-color'],
-      '--btn-hover-color': document.getElementById('btnHoverColor').value || savedStyles['--btn-hover-color'],
-      '--highlight-color': document.getElementById('highlightColor').value || savedStyles['--highlight-color'],
-      '--btn-text-color': document.getElementById('btnTextColor').value || savedStyles['--btn-text-color'],
-      '--timer-color': document.getElementById('timerColor').value || savedStyles['--timer-color'],
-      '--embed-width': `${document.getElementById('embedWidth')?.value || parseInt(savedStyles['--embed-width'])}px`,
-      '--embed-height': `${document.getElementById('embedHeight')?.value || parseInt(savedStyles['--embed-height'])}px`,
-      '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(savedStyles['--btn-font-size'])}px`,
-      '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(savedStyles['--timer-font-size'])}px`
-    };
-    for (const variable in styleMap) {
-      document.documentElement.style.setProperty(variable, styleMap[variable]);
-    }
-    const userAlerts = {
+function applyOptions() {
+  resetTimer();
+
+  const prevStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+  const prevAlerts = JSON.parse(localStorage.getItem('userAlerts') || '{}');
+
+  const newStyles = {
+    '--bg-color': document.getElementById('bgColor').value || prevStyles['--bg-color'],
+    '--btn-color': document.getElementById('btnColor').value || prevStyles['--btn-color'],
+    '--btn-hover-color': document.getElementById('btnHoverColor').value || prevStyles['--btn-hover-color'],
+    '--highlight-color': document.getElementById('highlightColor').value || prevStyles['--highlight-color'],
+    '--btn-text-color': document.getElementById('btnTextColor').value || prevStyles['--btn-text-color'],
+    '--timer-color': document.getElementById('timerColor').value || prevStyles['--timer-color'],
+    '--embed-width': `${document.getElementById('embedWidth')?.value || parseInt(prevStyles['--embed-width']) || 300}px`,
+    '--embed-height': `${document.getElementById('embedHeight')?.value || parseInt(prevStyles['--embed-height']) || 200}px`,
+    '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(prevStyles['--btn-font-size']) || 16}px`,
+    '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(prevStyles['--timer-font-size']) || 48}px`
+  };
+
+  for (const variable in newStyles) {
+    document.documentElement.style.setProperty(variable, newStyles[variable]);
+  }
+
+  const newAlerts = {
     pomodoro: document.getElementById('pomodoroAlert').value || prevAlerts.pomodoro || '작업 끝!',
     break: document.getElementById('breakAlert').value || prevAlerts.break || '휴식 끝!'
   };
-    localStorage.setItem('userStyles', JSON.stringify(styleMap));
-    localStorage.setItem('userAlerts', JSON.stringify(userAlerts));
-  }
+
+  localStorage.setItem('userStyles', JSON.stringify({ ...prevStyles, ...newStyles }));
+  localStorage.setItem('userAlerts', JSON.stringify({ ...prevAlerts, ...newAlerts }));
+}
 
   function getDurationForMode(mode) {
     const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
