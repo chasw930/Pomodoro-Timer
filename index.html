@@ -323,17 +323,26 @@
 
     function applyOptions() {
       resetTimer();
-      document.documentElement.style.setProperty('--bg-color', document.getElementById('bgColor').value);
-      document.documentElement.style.setProperty('--btn-color', document.getElementById('btnColor').value);
-      document.documentElement.style.setProperty('--btn-hover-color', document.getElementById('btnHoverColor').value);
-      document.documentElement.style.setProperty('--highlight-color', document.getElementById('highlightColor').value);
-      document.documentElement.style.setProperty('--btn-text-color', document.getElementById('btnTextColor').value);
-      document.documentElement.style.setProperty('--timer-color', document.getElementById('timerColor').value);
-      document.documentElement.style.setProperty('--embed-width', `${document.getElementById('embedWidth').value}px`);
-      document.documentElement.style.setProperty('--embed-height', `${document.getElementById('embedHeight').value}px`);
-      document.documentElement.style.setProperty('--btn-font-size', `${document.getElementById('btnFontSize').value}px`);
-      document.documentElement.style.setProperty('--timer-font-size', `${document.getElementById('timerFontSize').value}px`);
-    }
+  const styleMap = {
+    '--bg-color': document.getElementById('bgColor').value,
+    '--btn-color': document.getElementById('btnColor').value,
+    '--btn-hover-color': document.getElementById('btnHoverColor').value,
+    '--highlight-color': document.getElementById('highlightColor').value,
+    '--btn-text-color': document.getElementById('btnTextColor').value,
+    '--timer-color': document.getElementById('timerColor').value,
+    '--embed-width': `${document.getElementById('embedWidth').value}px`,
+    '--embed-height': `${document.getElementById('embedHeight').value}px`,
+    '--btn-font-size': `${document.getElementById('btnFontSize').value}px`,
+    '--timer-font-size': `${document.getElementById('timerFontSize').value}px`
+  };
+
+  for (const variable in styleMap) {
+    document.documentElement.style.setProperty(variable, styleMap[variable]);
+  }
+
+  // localStorage에 저장
+  localStorage.setItem('userStyles', JSON.stringify(styleMap));
+}
 
     function getDurationForMode(mode) {
       const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
@@ -341,6 +350,24 @@
       const long = parseInt(document.getElementById('longTime').value) || 15;
       return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
     }
+
+function loadUserStyles() {
+  const savedStyles = localStorage.getItem('userStyles');
+  if (!savedStyles) return;
+
+  const styleMap = JSON.parse(savedStyles);
+  for (const variable in styleMap) {
+    document.documentElement.style.setProperty(variable, styleMap[variable]);
+
+    // input에도 적용
+    const cleanId = variable.replace(/--/g, '').replace(/-/g, '');
+    const input = document.querySelector(`#${cleanId}`);
+    if (input) input.value = styleMap[variable].replace('px', '');
+  }
+}
+
+loadUserStyles(); // 저장된 스타일을 페이지 로드 시 불러오기
+
 
     switchMode(currentMode);
   </script>
