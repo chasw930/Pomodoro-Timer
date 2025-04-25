@@ -262,7 +262,7 @@
       timeLeft = duration * 60;
       updateTimerDisplay();
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelector(`.tab.${mode}`).classList.add('active');
+      document.querySelector(.tab.${mode}).classList.add('active');
       if (isRunning) {
         clearInterval(timerInterval);
         isRunning = false;
@@ -300,7 +300,7 @@
     function updateTimerDisplay() {
       let minutes = Math.floor(timeLeft / 60);
       let seconds = timeLeft % 60;
-      document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      document.getElementById('timer').innerText = ${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds};
     }
 
     function resetTimer() {
@@ -330,10 +330,10 @@
     '--highlight-color': document.getElementById('highlightColor').value,
     '--btn-text-color': document.getElementById('btnTextColor').value,
     '--timer-color': document.getElementById('timerColor').value,
-    '--embed-width': `${document.getElementById('embedWidth').value}px`,
-    '--embed-height': `${document.getElementById('embedHeight').value}px`,
-    '--btn-font-size': `${document.getElementById('btnFontSize').value}px`,
-    '--timer-font-size': `${document.getElementById('timerFontSize').value}px`
+    '--embed-width': ${document.getElementById('embedWidth').value}px,
+    '--embed-height': ${document.getElementById('embedHeight').value}px,
+    '--btn-font-size': ${document.getElementById('btnFontSize').value}px,
+    '--timer-font-size': ${document.getElementById('timerFontSize').value}px
   };
 
   for (const variable in styleMap) {
@@ -347,7 +347,7 @@
     function getDurationForMode(mode) {
       const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
       const short = parseInt(document.getElementById('shortTime').value) || 5;
-      const long = parseInt(document.getElementById('longTime').value) || 1F5;
+      const long = parseInt(document.getElementById('longTime').value) || 15;
       return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
     }
 
@@ -361,7 +361,7 @@ function loadUserStyles() {
 
     // input에도 적용
     const cleanId = variable.replace(/--/g, '').replace(/-/g, '');
-    const input = document.querySelector(`#${cleanId}`);
+    const input = document.querySelector(#${cleanId});
     if (input) input.value = styleMap[variable].replace('px', '');
   }
 }
