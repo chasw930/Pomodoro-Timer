@@ -321,33 +321,44 @@
       section.classList.toggle('visible');
     }
 
-    function applyOptions() {
-      resetTimer();
-  const styleMap = {
-    '--bg-color': document.getElementById('bgColor').value,
-    '--btn-color': document.getElementById('btnColor').value,
-    '--btn-hover-color': document.getElementById('btnHoverColor').value,
-    '--highlight-color': document.getElementById('highlightColor').value,
-    '--btn-text-color': document.getElementById('btnTextColor').value,
-    '--timer-color': document.getElementById('timerColor').value,
-    '--embed-width': `${document.getElementById('embedWidth').value}px`,
-    '--embed-height': `${document.getElementById('embedHeight').value}px`,
-    '--btn-font-size': `${document.getElementById('btnFontSize').value}px`,
-    '--timer-font-size': `${document.getElementById('timerFontSize').value}px`
+function applyOptions() {
+  resetTimer();
+
+  const styleInputs = {
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--embed-width': 'embedWidth',
+    '--embed-height': 'embedHeight',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize'
   };
 
-  for (const variable in styleMap) {
-    document.documentElement.style.setProperty(variable, styleMap[variable]);
+  const styleMap = {};
+
+  for (const variable in styleInputs) {
+    const inputEl = document.getElementById(styleInputs[variable]);
+    if (inputEl && inputEl.value !== '') {
+      const value = inputEl.value;
+      const fullValue = variable.includes('font-size') || variable.includes('width') || variable.includes('height')
+        ? `${value}px`
+        : value;
+      document.documentElement.style.setProperty(variable, fullValue);
+      styleMap[variable] = fullValue;
+    }
   }
 
-  // localStorage에 저장
   localStorage.setItem('userStyles', JSON.stringify(styleMap));
 }
+
 
     function getDurationForMode(mode) {
       const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
       const short = parseInt(document.getElementById('shortTime').value) || 5;
-      const long = parseInt(document.getElementById('longTime').value) || 15;
+      const long = parseInt(document.getElementById('longTime').value) || 1F5;
       return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
     }
 
