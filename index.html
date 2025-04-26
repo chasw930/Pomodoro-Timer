@@ -228,12 +228,12 @@
       <input type="number" id="timerFontSize" value="48">
     </div>
     <div class="option-group">
-      <label for="pomodoroAlert">작업 완료 알림:</label>
-      <input type="text" id="pomodoroAlert" value="작업 끝!">
+      <label for="workDoneMessage">작업 완료 메시지:</label>
+      <input type="text" id="workDoneMessage" value="˚₊‧꒰า 작업 끝 ໒꒱ ‧₊˚">
     </div>
     <div class="option-group">
-      <label for="breakAlert">휴식 완료 알림:</label>
-      <input type="text" id="breakAlert" value="휴식 끝!">
+      <label for="breakDoneMessage">휴식 완료 메시지:</label>
+      <input type="text" id="breakDoneMessage" value="휴식 끝!">
     </div>
   </div>
 
@@ -283,10 +283,10 @@
       clearInterval(timerInterval);
       isRunning = false;
       document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
-      const pomodoroAlert = document.getElementById('pomodoroAlert').value || '작업 끝!';
-      const breakAlert = document.getElementById('breakAlert').value || '휴식 끝!';
-      const alertMessage = currentMode === 'pomodoro' ? pomodoroAlert : breakAlert;
-      alert(alertMessage);
+      const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+      const workDone = messages.work || '작업 완료!';
+      const breakDone = messages.break || '휴식 끝!';
+      alert(currentMode === 'pomodoro' ? workDone : breakDone);
     } else {
       timeLeft--;
       updateTimerDisplay();
@@ -317,62 +317,68 @@
     section.classList.toggle('visible');
   }
 
-function applyOptions() {
-  resetTimer();
+  function applyOptions() {
+    resetTimer();
 
-  const prevStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
-  const prevAlerts = JSON.parse(localStorage.getItem('userAlerts') || '{}');
+    const savedStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
 
-  const newStyles = {
-    '--bg-color': document.getElementById('bgColor').value || prevStyles['--bg-color'],
-    '--btn-color': document.getElementById('btnColor').value || prevStyles['--btn-color'],
-    '--btn-hover-color': document.getElementById('btnHoverColor').value || prevStyles['--btn-hover-color'],
-    '--highlight-color': document.getElementById('highlightColor').value || prevStyles['--highlight-color'],
-    '--btn-text-color': document.getElementById('btnTextColor').value || prevStyles['--btn-text-color'],
-    '--timer-color': document.getElementById('timerColor').value || prevStyles['--timer-color'],
-    '--embed-width': `${document.getElementById('embedWidth')?.value || parseInt(prevStyles['--embed-width']) || 300}px`,
-    '--embed-height': `${document.getElementById('embedHeight')?.value || parseInt(prevStyles['--embed-height']) || 200}px`,
-    '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(prevStyles['--btn-font-size']) || 16}px`,
-    '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(prevStyles['--timer-font-size']) || 48}px`
-  };
+    const styleMap = {
+      '--bg-color': document.getElementById('bgColor').value || savedStyles['--bg-color'],
+      '--btn-color': document.getElementById('btnColor').value || savedStyles['--btn-color'],
+      '--btn-hover-color': document.getElementById('btnHoverColor').value || savedStyles['--btn-hover-color'],
+      '--highlight-color': document.getElementById('highlightColor').value || savedStyles['--highlight-color'],
+      '--btn-text-color': document.getElementById('btnTextColor').value || savedStyles['--btn-text-color'],
+      '--timer-color': document.getElementById('timerColor').value || savedStyles['--timer-color'],
+      '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(savedStyles['--btn-font-size'])}px`,
+      '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(savedStyles['--timer-font-size'])}px`,
+    };
 
-  for (const variable in newStyles) {
-    document.documentElement.style.setProperty(variable, newStyles[variable]);
+    for (const variable in styleMap) {
+      document.documentElement.style.setProperty(variable, styleMap[variable]);
+    }
+
+    const times = {
+      pomodoro: parseInt(document.getElementById('pomodoroTime').value),
+      short: parseInt(document.getElementById('shortTime').value),
+      long: parseInt(document.getElementById('longTime').value)
+    };
+
+    const messages = {
+      work: document.getElementById('workDoneMessage').value,
+      break: document.getElementById('breakDoneMessage').value
+    };
+
+    localStorage.setItem('userStyles', JSON.stringify(styleMap));
+    localStorage.setItem('userTimes', JSON.stringify(times));
+    localStorage.setItem('userMessages', JSON.stringify(messages));
   }
 
-  const newAlerts = {
-    pomodoro: document.getElementById('pomodoroAlert').value || prevAlerts.pomodoro || '작업 끝!',
-    break: document.getElementById('breakAlert').value || prevAlerts.break || '휴식 끝!'
-  };
-
-  localStorage.setItem('userStyles', JSON.stringify({ ...prevStyles, ...newStyles }));
-  localStorage.setItem('userAlerts', JSON.stringify({ ...prevAlerts, ...newAlerts }));
-}
-
   function getDurationForMode(mode) {
-    const pomodoro = parseInt(document.getElementById('pomodoroTime').value) || 25;
-    const short = parseInt(document.getElementById('shortTime').value) || 5;
-    const long = parseInt(document.getElementById('longTime').value) || 15;
+    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+    const pomodoro = parseInt(document.getElementById('pomodoroTime').value || savedTimes.pomodoro || 25);
+    const short = parseInt(document.getElementById('shortTime').value || savedTimes.short || 5);
+    const long = parseInt(document.getElementById('longTime').value || savedTimes.long || 15);
     return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
   }
 
   function loadUserStyles() {
-    const savedStyles = localStorage.getItem('userStyles');
-    if (savedStyles) {
-      const styleMap = JSON.parse(savedStyles);
-      for (const variable in styleMap) {
-        document.documentElement.style.setProperty(variable, styleMap[variable]);
-        const cleanId = variable.replace(/--/g, '').replace(/-/g, '');
-        const input = document.querySelector(`#${cleanId}`);
-        if (input) input.value = styleMap[variable].replace('px', '');
-      }
+    const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+    for (const variable in styleMap) {
+      document.documentElement.style.setProperty(variable, styleMap[variable]);
+      const cleanId = variable.replace(/--/g, '').replace(/-/g, '');
+      const input = document.querySelector(`#${cleanId}`);
+      if (input) input.value = styleMap[variable].replace('px', '');
     }
-    const savedAlerts = localStorage.getItem('userAlerts');
-    if (savedAlerts) {
-      const alerts = JSON.parse(savedAlerts);
-      if (alerts.pomodoro) document.getElementById('pomodoroAlert').value = alerts.pomodoro;
-      if (alerts.break) document.getElementById('breakAlert').value = alerts.break;
-    }
+
+    const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
+    document.getElementById('pomodoroTime').value = times.pomodoro || 25;
+    document.getElementById('shortTime').value = times.short || 5;
+    document.getElementById('longTime').value = times.long || 15;
+
+    const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+    document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
+    document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
   }
 
   loadUserStyles();
