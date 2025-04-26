@@ -16,12 +16,27 @@
       --btn-text-color: #fff;
       --timer-color: #000;
       --timer-font: 'Arial', sans-serif;
-      --embed-width: 300px;
-      --embed-height: 200px;
       --timer-font-size: 48px;
       --btn-font-size: 16px;
     }
-    
+
+    .dark-theme {
+      --bg-color: #191919;
+      --timer-color: #fff;
+      --text-color: #fff;
+     }
+
+    .dark-theme .section-content {
+      background-color: #2a2a2a;
+      border-color: #444;
+    }
+
+    .dark-theme .section-button {
+      background-color: #2a2a2a;
+      border-color: #444;
+      color: #fff;
+    }
+
     *,
     *::before,
     *::after {
@@ -39,6 +54,7 @@
       min-height: 100vh;
       padding: 2rem;
       margin: 0;
+      transition: background-color 0.5s
     }
 
     #timer {
@@ -324,6 +340,15 @@
     </div>
   </div>
 
+  <!-- 다크/라이트 테마 설정 -->
+<button class="section-button" onclick="toggleSection('themeSettings')">테마 설정</button>
+<div id="themeSettings" class="section-content">
+  <div class="option-group center-align" style="gap:10px;">
+    <button class="btn" onclick="setTheme('dark')">🖤 𝐃𝐚𝐫𝐤 🖤</button>
+    <button class="btn" onclick="setTheme('light')">🤍 𝐋𝐢𝐠𝐡𝐭 🤍</button>
+  </div>
+</div>
+
   <div class="apply-btn-wrapper">
     <button class="btn" onclick="applyOptions()">적용</button>
     <button class="btn" onclick="toggleOptions()">닫기</button>
@@ -461,6 +486,17 @@
   alarm.currentTime = 0;
   }
 
+  function setTheme(theme) {
+  const body = document.body;
+  if (theme === 'dark') {
+    body.classList.add('dark-theme');
+    localStorage.setItem('userTheme', 'dark');
+  } else {
+    body.classList.remove('dark-theme');
+    localStorage.setItem('userTheme', 'light');
+    }
+  }
+
   function applyOptions() {
   
     const styleInputs = {
@@ -565,7 +601,13 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // 페이지 로드 시 저장된 테마 불러오기
+  window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('userTheme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    }
+    
   loadUserStyles();
   resetTimer();
 });
