@@ -45,11 +45,11 @@
 
     .theme-toggle-btn {
       background: none;
-     border: none;
+      border: none;
       font-size: 20px;
       cursor: pointer;
-     padding: 4px;
-     transition: transform 0.2s;
+      padding: 4px;
+      transition: transform 0.2s;
     }
 
     .theme-toggle-btn:hover {
@@ -259,7 +259,28 @@
 .message-box button:hover {
   background-color: var(--btn-hover-color);
 }
-  
+
+.preset-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto; /* 가운데 정렬 */
+  width: 100%;
+}
+
+.preset-list li {
+  cursor: pointer;
+  text-align: center;
+  margin: 8px 0;
+  font-size: 18px;
+  padding: 8px 0;
+  transition: color 0.3s, text-decoration 0.3s;
+  color: var(--text-color);
+}
+
+.preset-list li.selected {
+  color: var(--highlight-color);
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -330,6 +351,26 @@
       <input type="color" id="timerColor" value="#000000">
     </div>
   </div>
+
+    <!-- 새로 추가할 프리셋 탭 버튼 -->
+    <button class="section-button" onclick="toggleSection('presetSettings')">프리셋 선택</button>
+
+    <!-- 프리셋 설정 부분 -->
+    <div id="presetSettings" class="section-content">
+      <div class="option-group"> 
+        <ul id="presetList" class="preset-list">
+          <li data-preset="pink" onclick="applyPreset('pink')">🩷𝑃𝑖𝑛𝑘🩷</li>
+          <li data-preset="blue" onclick="applyPreset('blue')">🩵𝐵𝑙𝑢𝑒🩵</li>
+          <li data-preset="yellow" onclick="applyPreset('yellow')">💛𝑌𝑒𝑙𝑙𝑜𝑤💛</li>
+          <li data-preset="green" onclick="applyPreset('green')">💚𝐺𝑟𝑒𝑒𝑛💚</li>
+          <li data-preset="black" onclick="applyPreset('black')">🖤𝐵𝑙𝑎𝑐𝑘🖤</li>
+          <li data-preset="white" onclick="applyPreset('white')">🤍𝑊ℎ𝑖𝑡𝑒🤍</li>
+          <li data-preset="pinkchoco" onclick="applyPreset('pinkchoco')">🩷𝑃𝐼𝑛𝑘𝐶ℎ𝑜𝑐𝑜🍫</li>
+          <li data-preset="tomato" onclick="applyPreset('tomato')">🍅𝑇𝑜𝑚𝑎𝑡𝑜🍅</li>
+          <li data-preset="angel" onclick="applyPreset('angel')">🪽𝐴𝑛𝑔𝑒𝑙🪽</li>
+        </ul>
+      </div> 
+    </div>
 
   <button class="section-button" onclick="toggleSection('textSettings')">텍스트 설정</button>
   <div id="textSettings" class="section-content">
@@ -527,6 +568,107 @@
 
   // data-theme 속성 설정
   document.documentElement.setAttribute('data-theme', finalMode);
+}
+
+// 프리셋 설정
+function applyPreset(presetName) {
+  const presetColors = {
+    pink: {
+      '--bg-color': '#FFD1DC',
+      '--btn-color': '#FFFFFF',
+      '--btn-hover-color': '#FFE4EC',
+      '--highlight-color': '#FF6699',
+      '--btn-text-color': '#FF6699',
+      '--timer-color': '#FF3366',
+    },
+    blue: {
+      '--bg-color': '#D0E8FF',
+      '--btn-color': '#FFFFFF',
+      '--btn-hover-color': '#E0F0FF',
+      '--highlight-color': '#3399FF',
+      '--btn-text-color': '#3399FF',
+      '--timer-color': '#0066CC',
+    },
+    yellow: {
+      '--bg-color': '#FFF9DB', 
+      '--btn-color': '#FFECB3', 
+      '--btn-hover-color': '#FFE082',
+      '--highlight-color': '#FFC107', 
+      '--btn-text-color': '#8D6E63', 
+      '--timer-color': '#FFA000', 
+      '--text-color': '#5C4033',
+      },
+    green: {
+      '--bg-color': '#D7EAD3',
+      '--btn-color': '#3E6543',
+      '--btn-hover-color': '#4C7A51',
+      '--highlight-color': '#3E6543',
+      '--btn-text-color': '#D7EAD3',
+      '--timer-color': '#2C4B32',
+    },
+    black: {
+      '--bg-color': '#000000',
+      '--btn-color': '#FFFFFF',
+      '--btn-hover-color': '#333333',
+      '--highlight-color': '#000000',
+      '--btn-text-color': '#000000',
+      '--timer-color': '#FFFFFF',
+      '--text-color': '#000000',
+    },
+    white: {
+      '--bg-color': '#FFFFFF',
+      '--btn-color': '#000000',
+      '--btn-hover-color': '#CCCCCC',
+      '--highlight-color': '#000000',
+      '--btn-text-color': '#FFFFFF',
+      '--timer-color': '#000000',
+    },
+    pinkchoco: {
+      '--bg-color': '#FFD1DC',
+      '--btn-color': '#8B4513',
+      '--btn-hover-color': '#A0522D',
+      '--highlight-color': '#8B4513',
+      '--btn-text-color': '#FFD1DC',
+      '--timer-color': '#A0522D',
+    },
+    tomato: {
+  '--bg-color': '#FF6347',
+  '--btn-color': '#228B22', 
+  '--btn-hover-color': '#2E8B57', 
+  '--highlight-color': '#228B22', 
+  '--btn-text-color': '#FFFFFF',   
+  '--timer-color': '#006400',      
+  '--text-color': '#2E2E2E',       
+    },
+    angel: {
+  '--bg-color': '#FFFFFF',      
+  '--btn-color': '#E7F3F8',    
+  '--btn-hover-color': '#A0BACF', 
+  '--highlight-color': '#94C6E0', 
+  '--btn-text-color': '#5281AC',  
+  '--timer-color': '#5084AC', 
+  '--text-color': '#2E2E2E', 
+  },
+  };
+
+  const colors = presetColors[presetName];
+  if (!colors) return;
+
+ // 스타일 적용
+ for (const variable in colors) {
+    document.documentElement.style.setProperty(variable, colors[variable]);
+  }
+  localStorage.setItem('userStyles', JSON.stringify(colors));
+
+  // 선택 표시 업데이트
+  const presetListItems = document.querySelectorAll('.preset-list li');
+presetListItems.forEach(li => {
+  if (li.getAttribute('data-preset') === presetName) {
+    li.classList.add('selected');
+  } else {
+    li.classList.remove('selected');
+  }
+});
 }
 
 // 테마 설정 저장 + 적용
