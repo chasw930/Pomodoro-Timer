@@ -2,57 +2,265 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pomodoro Timer</title>
   <style>
-    /* 기존 스타일 그대로 유지 */
-    /* ... (생략) ... */
-    .option-group input[type="range"] {
+    :root {
+      --bg-color: #f0f0f0;
+      --text-color: #333;
+      --btn-color: #4CAF50;
+      --btn-hover-color: #45a049;
+      --highlight-color: #ff9800;
+      --highlight-text-color: #fff;
+      --btn-text-color: #fff;
+      --timer-color: #000;
+      --timer-font: 'Arial', sans-serif;
+      --embed-width: 300px;
+      --embed-height: 200px;
+      --timer-font-size: 48px;
+      --btn-font-size: 16px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #timer {
+      font-size: var(--timer-font-size);
+      font-family: var(--timer-font);
+      color: var(--timer-color);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
       width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      border: none;
+      margin: 0 5px;
+      transition: background-color 0.3s;
+      border-radius: 25px;
+      font-size: var(--btn-font-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab:hover {
+      background-color: var(--btn-hover-color);
+    }
+
+    .tab.active {
+      background-color: var(--highlight-color);
+      color: var(--highlight-text-color);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: var(--btn-font-size);
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      background-color: var(--btn-hover-color);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .section-button {
+      background-color: #fff;
+      color: var(--highlight-color);
+      border: 1px solid var(--highlight-color);
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      margin: 5px 0;
+      border-radius: 8px;
+    }
+
+    .section-content {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .section-content.visible {
+      display: block;
+    }
+
+    .option-group {
+      margin: 10px 0;
+    }
+
+    .option-group label {
+      margin-right: 10px;
+    }
+
+    .option-group input {
+      padding: 5px;
+      width: 120px;
+    }
+
+    .center-align {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .apply-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
     }
   </style>
 </head>
 <body>
 <div id="pomodoroApp">
-  <!-- 기존 UI 구성 그대로 유지 -->
+  <div class="tabs">
+    <button class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</button>
+    <button class="tab short" onclick="switchMode('short')">𝐒𝐡𝐨𝐫𝐭 𝐁𝐫𝐞𝐚𝐤</button>
+    <button class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</button>
+  </div>
+
+  <div id="timer">00:00</div>
+
+  <div class="button-container">
+    <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
+    <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
+    <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+  </div>
 </div>
 
-<!-- 옵션 패널 -->
 <div id="optionsPanel" style="display:none; margin-top: 20px; width: 100%; max-width: 400px;">
-  <!-- 기존 설정들 유지 -->
-
-  <button class="section-button" onclick="toggleSection('soundSettings')">알람 설정</button>
-  <div id="soundSettings" class="section-content">
+  <button class="section-button" onclick="toggleSection('timeSettings')">시간 설정</button>
+  <div id="timeSettings" class="section-content">
     <div class="option-group">
-      <label for="volumeControl">알람 볼륨:</label>
-      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+      <label for="pomodoroTime">Pomodoro 시간 (분):</label>
+      <input type="number" id="pomodoroTime" value="25">
+    </div>
+    <div class="option-group">
+      <label for="shortTime">짧은 휴식 (분):</label>
+      <input type="number" id="shortTime" value="5">
+    </div>
+    <div class="option-group">
+      <label for="longTime">긴 휴식 (분):</label>
+      <input type="number" id="longTime" value="15">
     </div>
   </div>
 
-  <!-- 기존 적용/닫기 버튼 유지 -->
-</div>
+  <button class="section-button" onclick="toggleSection('colorSettings')">색상 설정</button>
+  <div id="colorSettings" class="section-content">
+    <div class="option-group">
+      <label for="bgColor">배경 색상:</label>
+      <input type="color" id="bgColor" value="#f0f0f0">
+    </div>
+    <div class="option-group">
+      <label for="btnColor">버튼 색상:</label>
+      <input type="color" id="btnColor" value="#4CAF50">
+    </div>
+    <div class="option-group">
+      <label for="btnHoverColor">버튼 호버 색상:</label>
+      <input type="color" id="btnHoverColor" value="#45a049">
+    </div>
+    <div class="option-group">
+      <label for="highlightColor">버튼 강조 색상:</label>
+      <input type="color" id="highlightColor" value="#ff9800">
+    </div>
+    <div class="option-group">
+      <label for="btnTextColor">버튼 텍스트 색상:</label>
+      <input type="color" id="btnTextColor" value="#ffffff">
+    </div>
+    <div class="option-group">
+      <label for="timerColor">타이머 색상:</label>
+      <input type="color" id="timerColor" value="#000000">
+    </div>
+  </div>
 
-<!-- 알람 오디오 -->
-<audio id="alarmSound" loop>
-  <source src="prod.chibi-wind.mp3" type="audio/mpeg">
-</audio>
+  <button class="section-button" onclick="toggleSection('textSettings')">텍스트 설정</button>
+  <div id="textSettings" class="section-content">
+    <div class="option-group">
+      <label for="btnFontSize">버튼 텍스트 크기 (px):</label>
+      <input type="number" id="btnFontSize" value="16">
+    </div>
+    <div class="option-group">
+      <label for="timerFontSize">타이머 숫자 크기 (px):</label>
+      <input type="number" id="timerFontSize" value="48">
+    </div>
+    <div class="option-group">
+      <label for="workDoneMessage">작업 완료 메시지:</label>
+      <input type="text" id="workDoneMessage" value="작업 끝!">
+    </div>
+    <div class="option-group">
+      <label for="breakDoneMessage">휴식 완료 메시지:</label>
+      <input type="text" id="breakDoneMessage" value="휴식 끝!">
+    </div>
+  </div>
+
+  <div class="apply-btn-wrapper">
+    <button class="btn" onclick="applyOptions()">적용</button>
+    <button class="btn" onclick="toggleOptions()">닫기</button>
+  </div>
+</div>
 
 <script>
   let timeLeft;
   let timerInterval;
   let isRunning = false;
   let currentMode = 'pomodoro';
-  const alarmAudio = document.getElementById('alarmSound');
 
   function switchMode(mode) {
     currentMode = mode;
-    timeLeft = getDurationForMode(mode) * 60;
+    const duration = getDurationForMode(mode);
+    timeLeft = duration * 60;
     updateTimerDisplay();
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelector(`.tab.${mode}`).classList.add('active');
-    stopAlarm();
-    clearInterval(timerInterval);
-    isRunning = false;
-    document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
   }
 
   function toggleTimer() {
@@ -76,10 +284,9 @@
       isRunning = false;
       document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
       const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-      const workDone = messages.work || '작업 끝!';
+      const workDone = messages.work || '작업 완료!';
       const breakDone = messages.break || '휴식 끝!';
       alert(currentMode === 'pomodoro' ? workDone : breakDone);
-      playAlarm();
     } else {
       timeLeft--;
       updateTimerDisplay();
@@ -87,15 +294,13 @@
   }
 
   function updateTimerDisplay() {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    document.getElementById('timer').innerText = 
-      `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }
 
   function resetTimer() {
     clearInterval(timerInterval);
-    stopAlarm();
     isRunning = false;
     timeLeft = getDurationForMode(currentMode) * 60;
     updateTimerDisplay();
@@ -113,15 +318,20 @@
   }
 
   function applyOptions() {
+    resetTimer();
+
+    const savedStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+
     const styleMap = {
-      '--bg-color': document.getElementById('bgColor').value,
-      '--btn-color': document.getElementById('btnColor').value,
-      '--btn-hover-color': document.getElementById('btnHoverColor').value,
-      '--highlight-color': document.getElementById('highlightColor').value,
-      '--btn-text-color': document.getElementById('btnTextColor').value,
-      '--timer-color': document.getElementById('timerColor').value,
-      '--btn-font-size': `${document.getElementById('btnFontSize').value}px`,
-      '--timer-font-size': `${document.getElementById('timerFontSize').value}px`
+      '--bg-color': document.getElementById('bgColor').value || savedStyles['--bg-color'],
+      '--btn-color': document.getElementById('btnColor').value || savedStyles['--btn-color'],
+      '--btn-hover-color': document.getElementById('btnHoverColor').value || savedStyles['--btn-hover-color'],
+      '--highlight-color': document.getElementById('highlightColor').value || savedStyles['--highlight-color'],
+      '--btn-text-color': document.getElementById('btnTextColor').value || savedStyles['--btn-text-color'],
+      '--timer-color': document.getElementById('timerColor').value || savedStyles['--timer-color'],
+      '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(savedStyles['--btn-font-size'])}px`,
+      '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(savedStyles['--timer-font-size'])}px`,
     };
 
     for (const variable in styleMap) {
@@ -139,20 +349,16 @@
       break: document.getElementById('breakDoneMessage').value
     };
 
-    const volume = parseFloat(document.getElementById('volumeControl').value);
-    alarmAudio.volume = volume;
-
     localStorage.setItem('userStyles', JSON.stringify(styleMap));
     localStorage.setItem('userTimes', JSON.stringify(times));
     localStorage.setItem('userMessages', JSON.stringify(messages));
-    localStorage.setItem('alarmVolume', volume.toString());
   }
 
   function getDurationForMode(mode) {
     const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    const pomodoro = savedTimes.pomodoro || 25;
-    const short = savedTimes.short || 5;
-    const long = savedTimes.long || 15;
+    const pomodoro = parseInt(document.getElementById('pomodoroTime').value || savedTimes.pomodoro || 25);
+    const short = parseInt(document.getElementById('shortTime').value || savedTimes.short || 5);
+    const long = parseInt(document.getElementById('longTime').value || savedTimes.long || 15);
     return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
   }
 
@@ -173,22 +379,6 @@
     const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
     document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
     document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
-
-    const savedVolume = parseFloat(localStorage.getItem('alarmVolume'));
-    if (!isNaN(savedVolume)) {
-      document.getElementById('volumeControl').value = savedVolume;
-      alarmAudio.volume = savedVolume;
-    }
-  }
-
-  function playAlarm() {
-    alarmAudio.currentTime = 0;
-    alarmAudio.play();
-  }
-
-  function stopAlarm() {
-    alarmAudio.pause();
-    alarmAudio.currentTime = 0;
   }
 
   loadUserStyles();
