@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pomodoro Timer</title>
   <style>
+  
     :root {
       --bg-color: #f0f0f0;
       --text-color: #333;
@@ -141,6 +142,17 @@
       width: 120px;
     }
 
+    #optionsPanel {
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    max-height: 0;
+    opacity: 0;
+  }
+  #optionsPanel.open {
+    max-height: 1000px; /* 충분히 큰 값 */
+    opacity: 1;
+  }
+
     .center-align {
       display: flex;
       justify-content: center;
@@ -172,7 +184,8 @@
   </div>
 </div>
 
-<div id="optionsPanel" style="display:none; margin-top: 20px; width: 100%; max-width: 400px;">
+<!-- 옵션 패널 -->
+<div id="optionsPanel" style="margin-top: 20px; width: 100%; max-width: 400px;">
   <button class="section-button" onclick="toggleSection('timeSettings')">시간 설정</button>
   <div id="timeSettings" class="section-content">
     <div class="option-group">
@@ -237,17 +250,40 @@
     </div>
   </div>
 
+  <!-- 볼륨 조절 슬라이더 -->
+  <button class="section-button" onclick="toggleSection('soundSettings')">사운드 설정</button>
+  <div id="soundSettings" class="section-content">
+    <div class="option-group">
+      <label for="volumeControl">볼륨:</label>
+      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+    </div>
+  </div>
+
   <div class="apply-btn-wrapper">
     <button class="btn" onclick="applyOptions()">적용</button>
     <button class="btn" onclick="toggleOptions()">닫기</button>
   </div>
 </div>
 
+<!-- 알람 사운드 (반복재생) -->
+<audio id="alarmSound" loop>
+  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi-wind.mp3" type="audio/mp3">
+  </audio>
+
 <script>
   let timeLeft;
   let timerInterval;
   let isRunning = false;
   let currentMode = 'pomodoro';
+
+  const alarm = document.getElementById('alarmSound');
+  const volumeControl = document.getElementById('volumeControl');
+
+  volumeControl.addEventListener('input', () => {
+  alarm.volume = parseFloat(volumeControl.value);
+  localStorage.setItem('userVolume', volumeControl.value); // 저장
+});
+
 
   function switchMode(mode) {
     currentMode = mode;
@@ -261,6 +297,8 @@
       isRunning = false;
       document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     }
+    alarm.pause();
+    alarm.currentTime = 0;
   }
 
   function toggleTimer() {
@@ -280,18 +318,23 @@
 
   function updateTimer() {
     if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      isRunning = false;
-      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    
+    alarm.play(); // 먼저 사운드 재생
+
+    setTimeout(() => {
       const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
       const workDone = messages.work || '작업 완료!';
       const breakDone = messages.break || '휴식 끝!';
       alert(currentMode === 'pomodoro' ? workDone : breakDone);
-    } else {
-      timeLeft--;
-      updateTimerDisplay();
-    }
+    }, 500); // 0.5초 정도 늦게 alert() 호출
+  } else {
+    timeLeft--;
+    updateTimerDisplay();
   }
+}
 
   function updateTimerDisplay() {
     let minutes = Math.floor(timeLeft / 60);
@@ -305,11 +348,13 @@
     timeLeft = getDurationForMode(currentMode) * 60;
     updateTimerDisplay();
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    alarm.pause();
+    alarm.currentTime = 0;
   }
 
   function toggleOptions() {
     const panel = document.getElementById('optionsPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  panel.classList.toggle('open');
   }
 
   function toggleSection(id) {
@@ -318,40 +363,50 @@
   }
 
   function applyOptions() {
-    resetTimer();
+  
+    const styleInputs = {
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize',
+  };
 
-    const savedStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
-    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+  const updatedStyleMap = { ...currentStyleMap }; // 기존 값을 복사
 
-    const styleMap = {
-      '--bg-color': document.getElementById('bgColor').value || savedStyles['--bg-color'],
-      '--btn-color': document.getElementById('btnColor').value || savedStyles['--btn-color'],
-      '--btn-hover-color': document.getElementById('btnHoverColor').value || savedStyles['--btn-hover-color'],
-      '--highlight-color': document.getElementById('highlightColor').value || savedStyles['--highlight-color'],
-      '--btn-text-color': document.getElementById('btnTextColor').value || savedStyles['--btn-text-color'],
-      '--timer-color': document.getElementById('timerColor').value || savedStyles['--timer-color'],
-      '--btn-font-size': `${document.getElementById('btnFontSize').value || parseInt(savedStyles['--btn-font-size'])}px`,
-      '--timer-font-size': `${document.getElementById('timerFontSize').value || parseInt(savedStyles['--timer-font-size'])}px`,
-    };
-
-    for (const variable in styleMap) {
-      document.documentElement.style.setProperty(variable, styleMap[variable]);
+  for (const variable in styleInputs) {
+    const input = document.getElementById(styleInputs[variable]);
+    if (input) {
+      let newValue = input.type === 'number' ? `${input.value}px` : input.value;
+      if (currentStyleMap[variable] !== newValue) {
+        updatedStyleMap[variable] = newValue; // 변경된 경우에만 업데이트
+        document.documentElement.style.setProperty(variable, newValue);
+      }
     }
+  }
 
-    const times = {
-      pomodoro: parseInt(document.getElementById('pomodoroTime').value),
-      short: parseInt(document.getElementById('shortTime').value),
-      long: parseInt(document.getElementById('longTime').value)
-    };
+  // 시간 설정 저장장
+  const times = {
+    pomodoro: parseInt(document.getElementById('pomodoroTime').value),
+    short: parseInt(document.getElementById('shortTime').value),
+    long: parseInt(document.getElementById('longTime').value)
+  };
+  // 메시지 설정 저장장
+  const messages = {
+    work: document.getElementById('workDoneMessage').value,
+    break: document.getElementById('breakDoneMessage').value
+  };
 
-    const messages = {
-      work: document.getElementById('workDoneMessage').value,
-      break: document.getElementById('breakDoneMessage').value
-    };
+  // 로컬스토리지 업데이트
+  localStorage.setItem('userStyles', JSON.stringify(updatedStyleMap));
+  localStorage.setItem('userTimes', JSON.stringify(times));
+  localStorage.setItem('userMessages', JSON.stringify(messages));
 
-    localStorage.setItem('userStyles', JSON.stringify(styleMap));
-    localStorage.setItem('userTimes', JSON.stringify(times));
-    localStorage.setItem('userMessages', JSON.stringify(messages));
+  resetTimer();
   }
 
   function getDurationForMode(mode) {
@@ -381,8 +436,16 @@
     document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
   }
 
+    const savedVolume = localStorage.getItem('userVolume');
+    if (savedVolume !== null) {
+    volumeControl.value = savedVolume;
+     alarm.volume = parseFloat(savedVolume);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
   loadUserStyles();
   switchMode(currentMode);
+});
 </script>
 </body>
 </html>
