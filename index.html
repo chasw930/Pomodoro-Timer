@@ -37,6 +37,25 @@
       color: #fff;
     }
 
+    .top-controls {
+      display: flex;
+      align-items: center;
+     gap: 8px;
+    }
+
+    .theme-toggle-btn {
+      background: none;
+     border: none;
+      font-size: 20px;
+      cursor: pointer;
+     padding: 4px;
+     transition: transform 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.2);
+    }
+
     *,
     *::before,
     *::after {
@@ -257,6 +276,7 @@
     <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
     <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
     <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+    <button id="themeToggleButton" class="theme-toggle-btn" onclick="toggleTheme()">🖤</button>
   </div>
 </div>
 
@@ -487,10 +507,11 @@
   alarm.currentTime = 0;
   }
 
-// 테마 적용 함수
-function applyTheme(mode) {
+  function applyTheme(mode) {
   const body = document.body;
   body.classList.remove('dark-theme');
+
+  let finalMode = mode;
 
   if (mode === 'dark') {
     body.classList.add('dark-theme');
@@ -498,8 +519,14 @@ function applyTheme(mode) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark) {
       body.classList.add('dark-theme');
+      finalMode = 'dark';
+    } else {
+      finalMode = 'light';
     }
   }
+
+  // data-theme 속성 설정
+  document.documentElement.setAttribute('data-theme', finalMode);
 }
 
 // 테마 설정 저장 + 적용
@@ -512,6 +539,32 @@ function setTheme(mode) {
   applyTheme(mode);
 }
 
+// 다크/라이트 전환 버튼
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  
+  if (currentTheme === 'dark') {
+    setTheme('light');
+  } else {
+    setTheme('dark');
+  }
+  updateThemeToggleButton(); // 버튼 표시도 같이 바꿔야 함
+}
+
+// 테마 상태에 따라 버튼 표시
+function updateThemeToggleButton() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const themeButton = document.getElementById('themeToggleButton');
+  
+  themeButton.textContent = currentTheme === 'dark' ? '🖤' : '🤍';
+}
+
+// 페이지 로딩 시
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('themeMode') || 'system';
+  applyTheme(savedTheme);
+  updateThemeToggleButton();
+});
 
   function applyOptions() {
   
@@ -649,6 +702,8 @@ function getDurationForMode(mode) {
   const savedTheme = localStorage.getItem('themeMode') || 'system';
   applyTheme(savedTheme);
 
+  updateThemeToggleButton();
+
   const savedVolume = localStorage.getItem('userVolume');
   if (savedVolume !== null) {
     alarm.volume = parseFloat(savedVolume);
@@ -669,4 +724,3 @@ function getDurationForMode(mode) {
 </script>
 </body>
 </html>
-
