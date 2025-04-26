@@ -281,7 +281,7 @@
 
   volumeControl.addEventListener('input', () => {
   alarm.volume = parseFloat(volumeControl.value);
-  localStorage.setItem('userVolume', volumeControl.value); // 저장
+  localStorage.setItem('userVolume', volumeControl.value); 
 });
 
 
@@ -322,14 +322,14 @@
     isRunning = false;
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     
-    alarm.play(); // 먼저 사운드 재생
+    alarm.play(); 
 
     setTimeout(() => {
       const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
       const workDone = messages.work || '작업 완료!';
       const breakDone = messages.break || '휴식 끝!';
       alert(currentMode === 'pomodoro' ? workDone : breakDone);
-    }, 500); // 0.5초 정도 늦게 alert() 호출
+    }, 300); // 0.3초 정도 늦게 alert() 호출
   } else {
     timeLeft--;
     updateTimerDisplay();
@@ -419,11 +419,24 @@
 
   function loadUserStyles() {
     const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
-    for (const variable in styleMap) {
-      document.documentElement.style.setProperty(variable, styleMap[variable]);
-      const cleanId = variable.replace(/--/g, '').replace(/-/g, '');
-      const input = document.querySelector(`#${cleanId}`);
+  for (const variable in styleMap) {
+    document.documentElement.style.setProperty(variable, styleMap[variable]);
+    
+    const mapping = {
+      '--bg-color': 'bgColor',
+      '--btn-color': 'btnColor',
+      '--btn-hover-color': 'btnHoverColor',
+      '--highlight-color': 'highlightColor',
+      '--btn-text-color': 'btnTextColor',
+      '--timer-color': 'timerColor',
+      '--btn-font-size': 'btnFontSize',
+      '--timer-font-size': 'timerFontSize'
+    };
+    const inputId = mapping[variable];
+    if (inputId) {
+      const input = document.getElementById(inputId);
       if (input) input.value = styleMap[variable].replace('px', '');
+    }
     }
 
     const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
