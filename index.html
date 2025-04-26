@@ -315,11 +315,11 @@
   <div id="textSettings" class="section-content">
     <div class="option-group">
       <label for="btnFontSize">버튼 텍스트 크기 (px):</label>
-      <input type="number" id="btnFontSize" value="16">
+      <input type="number" id="btnFontSize" value="16" min="5" max="80">
     </div>
     <div class="option-group">
       <label for="timerFontSize">타이머 숫자 크기 (px):</label>
-      <input type="number" id="timerFontSize" value="48">
+      <input type="number" id="timerFontSize" value="48" min="10" max="200">
     </div>
     <div class="option-group">
       <label for="workDoneMessage">작업 완료 메시지 (30자):</label>
@@ -526,19 +526,38 @@ function setTheme(mode) {
     '--timer-font-size': 'timerFontSize',
     };
 
-  let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
-  const updatedStyleMap = { ...currentStyleMap };
+    let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+const updatedStyleMap = { ...currentStyleMap };
 
-  for (const variable in styleInputs) {
-    const input = document.getElementById(styleInputs[variable]);
-    if (input) {
-      let newValue = input.type === 'number' ? `${input.value}px` : input.value;
-      if (currentStyleMap[variable] !== newValue) {
-        updatedStyleMap[variable] = newValue; 
-        document.documentElement.style.setProperty(variable, newValue);
+for (const variable in styleInputs) {
+  const input = document.getElementById(styleInputs[variable]);
+  if (input) {
+    let newValue;
+    if (input.type === 'number') {
+      let value = parseInt(input.value, 10);
+
+      switch (variable) {
+        case '--btn-font-size':
+          value = Math.min(Math.max(value, 5), 80);
+          input.value = value;
+          break;
+        case '--timer-font-size':
+          value = Math.min(Math.max(value, 20), 200);
+          input.value = value;
+          break;
       }
+
+      newValue = `${value}px`;
+    } else {
+      newValue = input.value;
+    }
+
+    if (currentStyleMap[variable] !== newValue) {
+      updatedStyleMap[variable] = newValue;
+      document.documentElement.style.setProperty(variable, newValue);
     }
   }
+}
 
   // 볼륨 설정 저장 (input 이벤트로 저장되었지만 확실하게 하기 위해)
   localStorage.setItem('userVolume', volumeControl.value);
@@ -650,4 +669,3 @@ function getDurationForMode(mode) {
 </script>
 </body>
 </html>
-
