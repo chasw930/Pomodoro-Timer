@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <style>
+  
+    :root {
+      --bg-color: #f0f0f0;
+      --text-color: #333;
+      --btn-color: #4CAF50;
+      --btn-hover-color: #45a049;
+      --highlight-color: #ff9800;
+      --highlight-text-color: #fff;
+      --btn-text-color: #fff;
+      --timer-color: #000;
+      --timer-font: 'Arial', sans-serif;
+      --timer-font-size: 48px;
+      --btn-font-size: 16px;
+    }
+
+    .dark-theme {
+      --bg-color: #191919;
+      --timer-color: #fff;
+      --text-color: #fff;
+     }
+
+    .dark-theme .section-content {
+      background-color: #2a2a2a;
+      border-color: #444;
+    }
+
+    .dark-theme .section-button {
+      background-color: #2a2a2a;
+      border-color: #444;
+      color: #fff;
+    }
+
+    *,
+    *::before,
+    *::after {
+    box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      margin: 0;
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    #timer {
+      font-size: var(--timer-font-size);
+      font-family: var(--timer-font);
+      color: var(--timer-color);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      border: none;
+      margin: 0 5px;
+      transition: background-color 0.3s;
+      border-radius: 25px;
+      font-size: var(--btn-font-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab:hover {
+      background-color: var(--btn-hover-color);
+    }
+
+    .tab.active {
+      background-color: var(--highlight-color);
+      color: var(--highlight-text-color);
+      transform: scale(1.05);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: var(--btn-font-size);
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fixed-font {
+      font-size: 14px !important; 
+    }
+
+    .btn:hover {
+      background-color: var(--btn-hover-color);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .section-button {
+      background-color: #fff;
+      color: var(--highlight-color);
+      border: 1px solid var(--highlight-color);
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      margin: 5px 0;
+      border-radius: 8px;
+    }
+
+    .section-content {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .section-content.visible {
+      display: block;
+    }
+
+    .option-group {
+    margin: 10px 0;
+    display: flex;
+    align-items: flex-start; 
+    }
+
+    .option-group label {
+    margin-right: 10px;
+    min-width: 100px; 
+    padding-top: 5px;
+    }
+
+    .option-group input,
+    .option-group textarea {
+    flex-grow: 1; 
+    min-width: 60px;
+    padding: 5px;
+    resize: vertical;
+    box-sizing: border-box;
+    max-width: 100%;
+    }
+
+    #optionsPanel {
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    max-height: 0;
+    opacity: 0;
+    }
+  
+     #optionsPanel.open {
+      max-height: 1000;
+      opacity: 1;
+    }
+
+    .center-align {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .apply-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+.message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--bg-color);
+  padding: 30px;
+  border: 2px solid var(--btn-color);
+  border-radius: 10px;
+  z-index: 1000;
+  min-width: 150px;
+  max-width: 80%;
+  word-break: break-word;
+  width: auto;
+  color: var(--text-color);
+  
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center;
+}
+
+.message-box button {
+  margin-top: 20px;
+  background-color: var(--btn-color);
+  color: var(--btn-text-color);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.message-box button:hover {
+  background-color: var(--btn-hover-color);
+}
+  
+  </style>
+</head>
+<body>
+<div id="pomodoroApp">
+  <div class="tabs">
+    <button class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</button>
+    <button class="tab short" onclick="switchMode('short')">𝐒𝐡𝐨𝐫𝐭 𝐁𝐫𝐞𝐚𝐤</button>
+    <button class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</button>
+  </div>
+
+  <div id="timer">00:00</div>
+
+  <div class="button-container">
+    <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
+    <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
+    <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+  </div>
+</div>
+
+<div id="messageBox" class="message-box" style="display: none;">
+  <div id="messageText"></div>
+  <button onclick="closeMessageBox()">닫기</button>
+</div>
+
+<!-- 옵션 패널 -->
+<div id="optionsPanel" style="margin-top: 20px; width: 100%; max-width: 400px;">
+  <button class="section-button" onclick="toggleSection('timeSettings')">시간 설정</button>
+  <div id="timeSettings" class="section-content">
+    <div class="option-group">
+      <label for="pomodoroTime">Pomodoro 시간 (분):</label>
+      <input type="number" id="pomodoroTime" value="25">
+    </div>
+    <div class="option-group">
+      <label for="shortTime">짧은 휴식 (분):</label>
+      <input type="number" id="shortTime" value="5">
+    </div>
+    <div class="option-group">
+      <label for="longTime">긴 휴식 (분):</label>
+      <input type="number" id="longTime" value="15">
+    </div>
+  </div>
+
+  <button class="section-button" onclick="toggleSection('colorSettings')">색상 설정</button>
+  <div id="colorSettings" class="section-content">
+    <div class="option-group">
+      <label for="bgColor">배경 색상:</label>
+      <input type="color" id="bgColor" value="#f0f0f0">
+    </div>
+    <div class="option-group">
+      <label for="btnColor">버튼 색상:</label>
+      <input type="color" id="btnColor" value="#4CAF50">
+    </div>
+    <div class="option-group">
+      <label for="btnHoverColor">버튼 호버 색상:</label>
+      <input type="color" id="btnHoverColor" value="#45a049">
+    </div>
+    <div class="option-group">
+      <label for="highlightColor">버튼 강조 색상:</label>
+      <input type="color" id="highlightColor" value="#ff9800">
+    </div>
+    <div class="option-group">
+      <label for="btnTextColor">버튼 텍스트 색상:</label>
+      <input type="color" id="btnTextColor" value="#ffffff">
+    </div>
+    <div class="option-group">
+      <label for="timerColor">타이머 숫자 색상:</label>
+      <input type="color" id="timerColor" value="#000000">
+    </div>
+  </div>
+
+  <button class="section-button" onclick="toggleSection('textSettings')">텍스트 설정</button>
+  <div id="textSettings" class="section-content">
+    <div class="option-group">
+      <label for="btnFontSize">버튼 텍스트 크기 (px):</label>
+      <input type="number" id="btnFontSize" value="16">
+    </div>
+    <div class="option-group">
+      <label for="timerFontSize">타이머 숫자 크기 (px):</label>
+      <input type="number" id="timerFontSize" value="48">
+    </div>
+    <div class="option-group">
+      <label for="workDoneMessage">작업 완료 메시지 (30자):</label>
+      <textarea id="workDoneMessage" rows="2" maxlength="30"></textarea>
+    </div>
+    <div class="option-group">
+      <label for="breakDoneMessage">휴식 완료 메시지 (30자):</label>
+      <textarea id="breakDoneMessage" rows="2" maxlength="30"></textarea>
+    </div>
+  </div>
+
+  <!-- 볼륨 조절 슬라이더 -->
+  <button class="section-button" onclick="toggleSection('soundSettings')">사운드 설정</button>
+  <div id="soundSettings" class="section-content">
+    <div class="option-group">
+      <label for="volumeControl">볼륨:</label>
+      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+    </div>
+  </div>
+
+  <!-- 다크/라이트 테마 설정 -->
+<button class="section-button" onclick="toggleSection('themeSettings')">테마 설정</button>
+<div id="themeSettings" class="section-content">
+  <div class="option-group center-align" style="gap:5px;">
+    <button class="btn fixed-font" onclick="setTheme('dark')">🖤𝐃𝐚𝐫𝐤🖤</button>
+    <button class="btn fixed-font" onclick="setTheme('light')">🤍𝐋𝐢𝐠𝐡𝐭🤍</button>
+    <button class="btn fixed-font" onclick="setTheme('system')">🖥️𝐒𝐲𝐬𝐭𝐞𝐦🖥️</button>
+  </div>
+</div>
+
+  <div class="apply-btn-wrapper">
+    <button class="btn" onclick="applyOptions()">적용</button>
+    <button class="btn" onclick="toggleOptions()">닫기</button>
+  </div>
+</div>
+
+<!-- 알람 사운드 (반복재생) -->
+<audio id="alarmSound" loop>
+  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi-wind.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+  let timeLeft;
+  let timerInterval;
+  let isRunning = false;
+  let currentMode = 'pomodoro';
+
+  const alarm = document.getElementById('alarmSound');
+  const volumeControl = document.getElementById('volumeControl');
+
+  volumeControl.addEventListener('input', () => {
+  alarm.volume = parseFloat(volumeControl.value);
+  localStorage.setItem('userVolume', volumeControl.value); 
+});
+
+
+  function switchMode(mode) {
+    currentMode = mode;
+    const duration = getDurationForMode(mode);
+    timeLeft = duration * 60;
+    updateTimerDisplay();
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`.tab.${mode}`).classList.add('active');
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
+    alarm.pause();
+    alarm.currentTime = 0;
+  }
+
+  function toggleTimer() {
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    } else {
+      isRunning = true;
+      document.getElementById('startBtn').innerText = '𝙿𝙰𝚄𝚂𝙴';
+      if (!timeLeft) {
+        timeLeft = getDurationForMode(currentMode) * 60;
+      }
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+  }
+
+  function updateTimer() {
+    if (timeLeft <= 0) {
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    
+    alarm.play().catch(error => {
+    console.error('Alarm play error:', error);
+    });
+
+    setTimeout(() => {
+      const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+      const workDone = messages.work || '작업 완료!';
+      const breakDone = messages.break || '휴식 끝!';
+      const message = currentMode === 'pomodoro' ? workDone : breakDone;
+  showMessageBox(message);
+  }, 300);
+  } 
+    else {
+    timeLeft--;
+    updateTimerDisplay();
+  }
+}
+
+  function updateTimerDisplay() {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    timeLeft = getDurationForMode(currentMode) * 60;
+    updateTimerDisplay();
+    document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    alarm.pause();
+    alarm.currentTime = 0;
+  }
+
+  function toggleOptions() {
+    const panel = document.getElementById('optionsPanel');
+    const savedMessages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+    document.getElementById('workDoneMessage').value = savedMessages.work || '작업 끝!';
+    document.getElementById('breakDoneMessage').value = savedMessages.break || '휴식 끝!';
+
+
+   if (panel.classList.contains('open')) {
+    panel.style.maxHeight = '0';
+    panel.classList.remove('open');
+    } else {
+    panel.classList.add('open');
+    panel.style.maxHeight = panel.scrollHeight + 'px'; // 패널 안 콘텐츠 높이만큼 자동 확장
+    }
+  }
+
+  function toggleSection(id) {
+    const section = document.getElementById(id);
+    section.classList.toggle('visible');
+
+    const panel = document.getElementById('optionsPanel');
+    if (panel.classList.contains('open')) {
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+    }
+  }
+
+  function showMessageBox(message) {
+  const messageBox = document.getElementById('messageBox');
+  const messageText = document.getElementById('messageText');
+  messageText.innerHTML = message.replace(/\n/g, '<br>');
+  messageBox.style.display = 'block';
+  }
+
+  function closeMessageBox() {
+  const messageBox = document.getElementById('messageBox');
+  messageBox.style.display = 'none';
+  alarm.pause();
+  alarm.currentTime = 0;
+  }
+
+// 테마 적용 함수
+function applyTheme(mode) {
+  const body = document.body;
+  body.classList.remove('dark-theme');
+
+  if (mode === 'dark') {
+    body.classList.add('dark-theme');
+  } else if (mode === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      body.classList.add('dark-theme');
+    }
+  }
+}
+
+// 테마 설정 저장 + 적용
+function setTheme(mode) {
+  if (mode === 'system') {
+    localStorage.removeItem('themeMode');
+  } else {
+    localStorage.setItem('themeMode', mode);
+  }
+  applyTheme(mode);
+}
+
+
+  function applyOptions() {
+  
+    const styleInputs = {
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize',
+    };
+
+  let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+  const updatedStyleMap = { ...currentStyleMap };
+
+  for (const variable in styleInputs) {
+    const input = document.getElementById(styleInputs[variable]);
+    if (input) {
+      let newValue = input.type === 'number' ? `${input.value}px` : input.value;
+      if (currentStyleMap[variable] !== newValue) {
+        updatedStyleMap[variable] = newValue; 
+        document.documentElement.style.setProperty(variable, newValue);
+      }
+    }
+  }
+
+  // 볼륨 설정 저장 (input 이벤트로 저장되었지만 확실하게 하기 위해)
+  localStorage.setItem('userVolume', volumeControl.value);
+
+  // 시간 설정 저장
+  const times = {
+    pomodoro: parseInt(document.getElementById('pomodoroTime').value, 10),
+    short: parseInt(document.getElementById('shortTime').value, 10),
+    long: parseInt(document.getElementById('longTime').value, 10)
+  };
+
+  // **메시지 입력값 가져오기**
+  let workMessage = document.getElementById('workDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
+  let breakMessage = document.getElementById('breakDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
+
+  const messages = {
+    work: workMessage,
+    break: breakMessage
+  };
+
+  localStorage.setItem('userStyles', JSON.stringify(updatedStyleMap));
+  localStorage.setItem('userTimes', JSON.stringify(times));
+  localStorage.setItem('userMessages', JSON.stringify(messages));
+
+  resetTimer();
+}
+
+function getDurationForMode(mode) {
+  const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  
+  const pomodoro = parseInt(document.getElementById('pomodoroTime').value, 10) 
+                  || savedTimes.pomodoro 
+                  || 25;
+
+  const short = parseInt(document.getElementById('shortTime').value, 10) 
+                || savedTimes.short 
+                || 5;
+
+  const long = parseInt(document.getElementById('longTime').value, 10) 
+               || savedTimes.long 
+               || 15;
+
+  return mode === 'pomodoro' ? pomodoro
+       : mode === 'short' ? short
+       : long;
+}
+
+  function loadUserStyles() {
+  const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+
+  const mapping = {   
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize'
+  };
+
+  for (const variable in styleMap) {
+    document.documentElement.style.setProperty(variable, styleMap[variable]);
+    const inputId = mapping[variable];
+    if (inputId) {
+      const input = document.getElementById(inputId);
+      if (input) input.value = styleMap[variable].replace('px', '');
+    }
+  }
+
+    const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
+    document.getElementById('pomodoroTime').value = times.pomodoro || 25;
+    document.getElementById('shortTime').value = times.short || 5;
+    document.getElementById('longTime').value = times.long || 15;
+
+    const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+    document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
+    document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
+
+    const savedVolume = localStorage.getItem('userVolume');
+    if (savedVolume !== null) {
+    volumeControl.value = savedVolume;
+     alarm.volume = parseFloat(savedVolume);
+    }
+  }
+
+  // 페이지 로드 시 저장된 테마 불러오기
+  document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('themeMode') || 'system';
+  applyTheme(savedTheme);
+
+  const savedVolume = localStorage.getItem('userVolume');
+  if (savedVolume !== null) {
+    alarm.volume = parseFloat(savedVolume);
+    volumeControl.value = savedVolume;
+  }
+
+  loadUserStyles();
+  resetTimer();
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', (e) => {
+    const currentTheme = localStorage.getItem('themeMode') || 'system';
+    if (currentTheme === 'system') {
+      applyTheme('system');
+    }
+  });
+});
+</script>
+</body>
+</html>
+
