@@ -779,7 +779,9 @@ for (const variable in styleInputs) {
 }
 
 if (hasCustomChange) {
-  localStorage.removeItem('selectedPreset');
+  if (!localStorage.getItem('selectedPreset')) {
+    localStorage.removeItem('selectedPreset');
+  }
 }
 
 
