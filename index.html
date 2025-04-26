@@ -31,6 +31,7 @@
       justify-content: center;
       min-height: 100vh;
       margin: 0;
+      padding: 2rem;
     }
 
     #timer {
@@ -306,7 +307,7 @@
         '--timer-color': 'timerColor', '--btn-font-size': 'btnFontSize', '--timer-font-size': 'timerFontSize'
       }[variable];
       if (inputId) {
-        const input = document.getElementById(inputId);s
+        const input = document.getElementById(inputId);
         if (input) input.value = styleMap[variable].replace('px', '');
       }
     }
