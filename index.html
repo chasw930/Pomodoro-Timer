@@ -654,21 +654,42 @@ function applyPreset(presetName) {
   const colors = presetColors[presetName];
   if (!colors) return;
 
- // 스타일 적용
- for (const variable in colors) {
-    document.documentElement.style.setProperty(variable, colors[variable]);
-  }
-  localStorage.setItem('userStyles', JSON.stringify(colors));
+  const currentStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+  const mergedStyles = { ...currentStyles, ...colors };
 
-  // 선택 표시 업데이트
-  const presetListItems = document.querySelectorAll('.preset-list li');
-presetListItems.forEach(li => {
-  if (li.getAttribute('data-preset') === presetName) {
-    li.classList.add('selected');
-  } else {
-    li.classList.remove('selected');
+  // 스타일 적용
+  for (const variable in mergedStyles) {
+    document.documentElement.style.setProperty(variable, mergedStyles[variable]);
   }
-});
+
+  // **Input 값들도 업데이트하기**
+  const inputMapping = {
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize'
+  };
+
+  for (const variable in colors) {
+    const inputId = inputMapping[variable];
+    if (inputId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        if (variable.includes('font-size')) {
+          input.value = parseInt(colors[variable]);
+        } else {
+          input.value = colors[variable];
+        }
+      }
+    }
+  }
+
+  localStorage.setItem('userStyles', JSON.stringify(mergedStyles));
+  localStorage.setItem('selectedPreset', presetName);
 }
 
 // 테마 설정 저장 + 적용
@@ -722,7 +743,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
-const updatedStyleMap = { ...currentStyleMap };
+    const updatedStyleMap = { ...currentStyleMap };
+
+    let hasCustomChange = false;
 
 for (const variable in styleInputs) {
   const input = document.getElementById(styleInputs[variable]);
@@ -750,9 +773,15 @@ for (const variable in styleInputs) {
     if (currentStyleMap[variable] !== newValue) {
       updatedStyleMap[variable] = newValue;
       document.documentElement.style.setProperty(variable, newValue);
+      hasCustomChange = true;
     }
   }
 }
+
+if (hasCustomChange) {
+  localStorage.removeItem('selectedPreset');
+}
+
 
   // 볼륨 설정 저장 (input 이벤트로 저장되었지만 확실하게 하기 위해)
   localStorage.setItem('userVolume', volumeControl.value);
@@ -839,12 +868,44 @@ function getDurationForMode(mode) {
     }
   }
 
-  // 페이지 로드 시 저장된 테마 불러오기
+  //저장 설정
   document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('themeMode') || 'system';
   applyTheme(savedTheme);
-
   updateThemeToggleButton();
+
+  const savedPreset = localStorage.getItem('selectedPreset');
+  const savedUserStyles = localStorage.getItem('userStyles');
+
+  const presetListItems = document.querySelectorAll('.preset-list li');
+
+  presetListItems.forEach(li => {
+    li.addEventListener('click', () => {
+      const presetName = li.getAttribute('data-preset');
+      applyPreset(presetName);
+
+      // 선택 강조 표시
+      presetListItems.forEach(item => {
+        item.classList.remove('selected');
+      });
+      li.classList.add('selected');
+    });
+  });
+
+  if (savedPreset && savedUserStyles) {
+    applyPreset(savedPreset);
+
+    presetListItems.forEach(li => {
+      if (li.getAttribute('data-preset') === savedPreset) {
+        li.classList.add('selected');
+      } else {
+        li.classList.remove('selected');
+      }
+    });
+
+  } else {
+    loadUserStyles();
+  }
 
   const savedVolume = localStorage.getItem('userVolume');
   if (savedVolume !== null) {
@@ -852,7 +913,6 @@ function getDurationForMode(mode) {
     volumeControl.value = savedVolume;
   }
 
-  loadUserStyles();
   resetTimer();
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -866,4 +926,3 @@ function getDurationForMode(mode) {
 </script>
 </body>
 </html>
-
