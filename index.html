@@ -54,7 +54,7 @@
       min-height: 100vh;
       padding: 2rem;
       margin: 0;
-      transition: background-color 0.5s
+      transition: background-color 0.5s, color 0.5s;
     }
 
     #timer {
@@ -96,6 +96,7 @@
     .tab.active {
       background-color: var(--highlight-color);
       color: var(--highlight-text-color);
+      transform: scale(1.05);
     }
 
     .button-container {
@@ -180,15 +181,10 @@
     max-height: 0;
     opacity: 0;
     }
-
-    textarea {
-    max-width: 100%;
-    resize: vertical;
-    box-sizing: border-box;
-    } 
   
      #optionsPanel.open {
-    opacity: 1;
+      max-height: 1000;
+      opacity: 1;
     }
 
     .center-align {
@@ -346,6 +342,7 @@
   <div class="option-group center-align" style="gap:10px;">
     <button class="btn" onclick="setTheme('dark')">🖤 𝐃𝐚𝐫𝐤 🖤</button>
     <button class="btn" onclick="setTheme('light')">🤍 𝐋𝐢𝐠𝐡𝐭 🤍</button>
+    <button class="btn" onclick="setTheme('system')">🖥️ 𝐒𝐲𝐬𝐭𝐞𝐦 🖥️</button>
   </div>
 </div>
 
@@ -357,7 +354,7 @@
 
 <!-- 알람 사운드 (반복재생) -->
 <audio id="alarmSound" loop>
-  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi-wind.mp3" type="audio/mp3">
+  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi-wind.mp3" type="audio/mpeg">
   </audio>
 
 <script>
@@ -486,16 +483,31 @@
   alarm.currentTime = 0;
   }
 
-  function setTheme(theme) {
+// 테마 적용 함수
+function applyTheme(mode) {
   const body = document.body;
-  if (theme === 'dark') {
+  body.classList.remove('dark-theme');
+
+  if (mode === 'dark') {
     body.classList.add('dark-theme');
-    localStorage.setItem('userTheme', 'dark');
-  } else {
-    body.classList.remove('dark-theme');
-    localStorage.setItem('userTheme', 'light');
+  } else if (mode === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      body.classList.add('dark-theme');
     }
   }
+}
+
+// 테마 설정 저장 + 적용
+function setTheme(mode) {
+  if (mode === 'system') {
+    localStorage.removeItem('themeMode');
+  } else {
+    localStorage.setItem('themeMode', mode);
+  }
+  applyTheme(mode);
+}
+
 
   function applyOptions() {
   
@@ -524,24 +536,19 @@
     }
   }
 
+  // 볼륨 설정 저장 (input 이벤트로 저장되었지만 확실하게 하기 위해)
+  localStorage.setItem('userVolume', volumeControl.value);
+
   // 시간 설정 저장
   const times = {
-    pomodoro: parseInt(document.getElementById('pomodoroTime').value),
-    short: parseInt(document.getElementById('shortTime').value),
-    long: parseInt(document.getElementById('longTime').value)
+    pomodoro: parseInt(document.getElementById('pomodoroTime').value, 10),
+    short: parseInt(document.getElementById('shortTime').value, 10),
+    long: parseInt(document.getElementById('longTime').value, 10)
   };
 
   // **메시지 입력값 가져오기**
   let workMessage = document.getElementById('workDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
   let breakMessage = document.getElementById('breakDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
-
-  // **30자로 강제 자르기**
-  if (workMessage.length > 30) {
-    workMessage = workMessage.slice(0, 30);
-  }
-  if (breakMessage.length > 30) {
-    breakMessage = breakMessage.slice(0, 30);
-  }
 
   const messages = {
     work: workMessage,
@@ -555,35 +562,48 @@
   resetTimer();
 }
 
-  function getDurationForMode(mode) {
-    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    const pomodoro = parseInt(document.getElementById('pomodoroTime').value || savedTimes.pomodoro || 25);
-    const short = parseInt(document.getElementById('shortTime').value || savedTimes.short || 5);
-    const long = parseInt(document.getElementById('longTime').value || savedTimes.long || 15);
-    return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
-  }
+function getDurationForMode(mode) {
+  const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  
+  const pomodoro = parseInt(document.getElementById('pomodoroTime').value, 10) 
+                  || savedTimes.pomodoro 
+                  || 25;
+
+  const short = parseInt(document.getElementById('shortTime').value, 10) 
+                || savedTimes.short 
+                || 5;
+
+  const long = parseInt(document.getElementById('longTime').value, 10) 
+               || savedTimes.long 
+               || 15;
+
+  return mode === 'pomodoro' ? pomodoro
+       : mode === 'short' ? short
+       : long;
+}
 
   function loadUserStyles() {
-    const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+  const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+
+  const mapping = {   
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize'
+  };
+
   for (const variable in styleMap) {
     document.documentElement.style.setProperty(variable, styleMap[variable]);
-    
-    const mapping = {
-      '--bg-color': 'bgColor',
-      '--btn-color': 'btnColor',
-      '--btn-hover-color': 'btnHoverColor',
-      '--highlight-color': 'highlightColor',
-      '--btn-text-color': 'btnTextColor',
-      '--timer-color': 'timerColor',
-      '--btn-font-size': 'btnFontSize',
-      '--timer-font-size': 'timerFontSize'
-    };
     const inputId = mapping[variable];
     if (inputId) {
       const input = document.getElementById(inputId);
       if (input) input.value = styleMap[variable].replace('px', '');
     }
-    }
+  }
 
     const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
     document.getElementById('pomodoroTime').value = times.pomodoro || 25;
@@ -602,15 +622,28 @@
   }
 
   // 페이지 로드 시 저장된 테마 불러오기
-  window.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('userTheme');
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-theme');
-    }
-    
+  document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('themeMode') || 'system';
+  applyTheme(savedTheme);
+
+  const savedVolume = localStorage.getItem('userVolume');
+  if (savedVolume !== null) {
+    alarm.volume = parseFloat(savedVolume);
+    volumeControl.value = savedVolume;
+  }
+
   loadUserStyles();
   resetTimer();
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', (e) => {
+    const currentTheme = localStorage.getItem('themeMode') || 'system';
+    if (currentTheme === 'system') {
+      applyTheme('system');
+    }
+  });
 });
 </script>
 </body>
 </html>
+
