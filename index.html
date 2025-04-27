@@ -116,6 +116,20 @@
       transform: translateX(5%); 
     }
 
+    /* 아이패드 */
+    @media (max-width: 768px) {
+    .button-container {
+      transform: translateX(0%);
+      }
+    }
+
+    /* 모바일 환경 */
+    @media (max-width: 600px) {
+    .button-container {
+      transform: translateX(0%);
+      }
+    }
+
     .button-group {
      display: flex;
       gap: 10px; /* 버튼 사이 간격 */
