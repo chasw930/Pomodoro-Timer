@@ -43,19 +43,6 @@
      gap: 8px;
     }
 
-    .theme-toggle-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 4px;
-      transition: transform 0.2s;
-    }
-
-    .theme-toggle-btn:hover {
-      transform: scale(1.05);
-    }
-
     *,
     *::before,
     *::after {
@@ -121,8 +108,17 @@
     .button-container {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      align-items: center;
+      width: 100%;
+      gap: 15px; 
       margin-top: 20px;
+      flex-wrap: wrap;
+      transform: translateX(25px);
+    }
+
+    .button-group {
+     display: flex;
+      gap: 10px; /* 버튼 사이 간격 */
     }
 
     .btn {
@@ -149,6 +145,19 @@
 
     .btn:active {
       transform: scale(0.98);
+    }
+
+    .theme-toggle-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      transition: transform 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
     }
 
     .section-button {
@@ -223,67 +232,68 @@
       gap: 10px;
     }
 
-.message-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--bg-color);
-  padding: 30px;
-  border: 2px solid var(--btn-color);
-  border-radius: 10px;
-  z-index: 1000;
-  min-width: 150px;
-  max-width: 80%;
-  word-break: break-word;
-  width: auto;
-  color: var(--text-color);
-  
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  text-align: center;
-}
+    .message-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--bg-color);
+      padding: 30px;
+      border: 2px solid var(--btn-color);
+      border-radius: 10px;
+      z-index: 1000;
+      min-width: 150px;
+      max-width: 80%;
+      word-break: break-word;
+      width: auto;
+      color: var(--text-color);
+      
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center;
+    }
 
-.message-box button {
-  margin-top: 20px;
-  background-color: var(--btn-color);
-  color: var(--btn-text-color);
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: center;
-}
+    .message-box button {
+      margin-top: 20px;
+      background-color: var(--btn-color);
+      color: var(--btn-text-color);
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+    }
 
-.message-box button:hover {
-  background-color: var(--btn-hover-color);
-}
+    .message-box button:hover {
+      background-color: var(--btn-hover-color);
+    }
 
-.preset-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 auto; /* 가운데 정렬 */
-  width: 100%;
-}
+    .preset-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto; /* 가운데 정렬 */
+      width: 100%;
+    }
 
-.preset-list li {
-  cursor: pointer;
-  text-align: center;
-  margin: 8px 0;
-  font-size: 18px;
-  padding: 8px 0;
-  transition: color 0.3s, text-decoration 0.3s;
-  color: var(--text-color);
-}
+    .preset-list li {
+      cursor: pointer;
+      text-align: center;
+      margin: 8px 0;
+      font-size: 18px;
+      padding: 8px 0;
+      transition: color 0.3s, text-decoration 0.3s;
+      color: var(--text-color);
+    }
 
-.preset-list li.selected {
-  color: var(--highlight-color);
-  font-weight: bold;
-}
+    .preset-list li.selected {
+      color: var(--highlight-color);
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+
 <div id="pomodoroApp">
   <div class="tabs">
     <button class="tab pomodoro active" onclick="switchMode('pomodoro')">𝐏𝐨𝐦𝐨𝐝𝐨𝐫𝐨</button>
@@ -294,17 +304,20 @@
   <div id="timer">00:00</div>
 
   <div class="button-container">
-    <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
-    <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
-    <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+    <div class="button-group">
+      <button id="startBtn" class="btn" onclick="toggleTimer()">𝚂𝚃𝙰𝚁𝚃</button>
+      <button class="btn" onclick="resetTimer()">𝚁𝙴𝚂𝙴𝚃</button>
+      <button class="btn" onclick="toggleOptions()">໒꒱ ‧₊˚</button>
+    </div>
     <button id="themeToggleButton" class="theme-toggle-btn" onclick="toggleTheme()">🖤</button>
   </div>
 </div>
 
-<div id="messageBox" class="message-box" style="display: none;">
-  <div id="messageText"></div>
-  <button onclick="closeMessageBox()">닫기</button>
-</div>
+  <div id="messageBox" class="message-box" style="display: none;">
+    <div id="messageText"></div>
+    <button onclick="closeMessageBox()">닫기</button>
+  </div>
+
 
 <!-- 옵션 패널 -->
 <div id="optionsPanel" style="margin-top: 20px; width: 100%; max-width: 400px;">
