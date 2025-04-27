@@ -419,7 +419,7 @@
 
 <!-- 알람 사운드 (반복재생) -->
 <audio id="alarmSound" loop>
-  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi-wind.mp3" type="audio/mpeg">
+  <source src="https://raw.githubusercontent.com/chasw930/Pomodoro-Timer/main/prod.chibi_kiss.mp3" type="audio/mpeg">
   </audio>
 
 <script>
@@ -854,19 +854,20 @@ function getDurationForMode(mode) {
     }
   }
 
-    const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    document.getElementById('pomodoroTime').value = times.pomodoro || 25;
-    document.getElementById('shortTime').value = times.short || 5;
-    document.getElementById('longTime').value = times.long || 15;
+  // 시간/메시지/볼륨은 항상 불러오기
+  const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  document.getElementById('pomodoroTime').value = times.pomodoro || 25;
+  document.getElementById('shortTime').value = times.short || 5;
+  document.getElementById('longTime').value = times.long || 15;
 
-    const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-    document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
-    document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
+  const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+  document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
+  document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
 
-    const savedVolume = localStorage.getItem('userVolume');
-    if (savedVolume !== null) {
+  const savedVolume = localStorage.getItem('userVolume');
+  if (savedVolume !== null) {
     volumeControl.value = savedVolume;
-     alarm.volume = parseFloat(savedVolume);
+    alarm.volume = parseFloat(savedVolume);
     }
   }
 
@@ -896,6 +897,7 @@ function getDurationForMode(mode) {
 
   if (savedPreset && savedUserStyles) {
     applyPreset(savedPreset);
+    loadUserStyles(true);
 
     presetListItems.forEach(li => {
       if (li.getAttribute('data-preset') === savedPreset) {
