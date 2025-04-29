@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pomodoro Timer</title>
   <style>
-  
     :root {
       --bg-color: #f0f0f0;
       --text-color: #333;
@@ -49,7 +48,7 @@
     box-sizing: border-box;
     }
 
- body {
+    body {
       font-family: Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
@@ -121,9 +120,6 @@
     @media (max-width: 406px) {
     .button-container {
       transform: translateX(0%);
-      }
-    body {
-      min-height: auto;
       }
     }
 
@@ -199,7 +195,7 @@
     .option-group {
     margin: 10px 0;
     display: flex;
-    align-items: flex-start; 
+    align-items: center; 
     }
 
     .option-group label {
@@ -226,7 +222,7 @@
     }
   
      #optionsPanel.open {
-      max-height: 1000;
+      max-height: 1000px;
       opacity: 1;
     }
 
@@ -243,6 +239,70 @@
       gap: 10px;
     }
 
+    #heartTracker {
+      display: flex;
+      justify-content: center; 
+      align-items: center;   
+      font-size: clamp(15px, 5vw, 20px);
+      color: var(--highlight-color);
+      margin-top: 10px;
+      width: 100%;
+      text-align: center;      
+    }
+
+     /* 자동 반복 텍스트트 */
+    .subtext {
+      font-size: 0.8em;
+      color: gray;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    /* 스위치 스타일 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      min-width: 60px;
+      max-width: 100%;
+      box-sizing: border-box;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--highlight-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(75px);
+    }
+
     .message-box {
       position: fixed;
       top: 50%;
@@ -257,7 +317,7 @@
       max-width: 80%;
       word-break: break-word;
       width: auto;
-      color: var(--text-color);
+      color: var(--btn-text-color);
       
       display: flex; 
       flex-direction: column; 
@@ -312,6 +372,8 @@
     <button class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</button>
   </div>
 
+  <div id="heartTracker"></div>
+
   <div id="timer">00:00</div>
 
   <div class="button-container">
@@ -324,6 +386,7 @@
   </div>
 </div>
 
+<!-- 메시지 창 -->
   <div id="messageBox" class="message-box" style="display: none;">
     <div id="messageText"></div>
     <button onclick="closeMessageBox()">닫기</button>
@@ -332,7 +395,7 @@
 
 <!-- 옵션 패널 -->
 <div id="optionsPanel" style="margin-top: 20px; width: 100%; max-width: 400px;">
-  <button class="section-button" onclick="toggleSection('timeSettings')">시간 설정</button>
+  <button class="section-button" onclick="toggleSection('timeSettings')">타이머 설정</button>
   <div id="timeSettings" class="section-content">
     <div class="option-group">
       <label for="pomodoroTime">Pomodoro 시간 (분):</label>
@@ -345,6 +408,13 @@
     <div class="option-group">
       <label for="longTime">긴 휴식 (분):</label>
       <input type="number" id="longTime" value="15">
+    </div>
+    <div class="option-group" style="display: flex; align-items: center; justify-content: space-between;">
+      <label for="autoRepeatToggle" style="margin-right: 10px;">집중 모드 (자동 반복)</label>
+      <label class="switch">
+        <input type="checkbox" id="autoRepeatToggle">
+        <span class="slider round"></span>
+      </label>
     </div>
   </div>
 
@@ -389,7 +459,7 @@
           <li data-preset="green" onclick="applyPreset('green')">💚𝐺𝑟𝑒𝑒𝑛💚</li>
           <li data-preset="black" onclick="applyPreset('black')">🖤𝐵𝑙𝑎𝑐𝑘🖤</li>
           <li data-preset="white" onclick="applyPreset('white')">🤍𝑊ℎ𝑖𝑡𝑒🤍</li>
-          <li data-preset="pinkchoco" onclick="applyPreset('pinkchoco')">🩷𝑃𝐼𝑛𝑘𝐶ℎ𝑜𝑐𝑜🩷</li>
+          <li data-preset="pinkchoco" onclick="applyPreset('pinkchoco')">🩷𝑃𝐼𝑛𝑘𝐶ℎ𝑜𝑐𝑜🍫</li>
           <li data-preset="tomato" onclick="applyPreset('tomato')">🍅𝑇𝑜𝑚𝑎𝑡𝑜🍅</li>
           <li data-preset="angel" onclick="applyPreset('angel')">🪽𝐴𝑛𝑔𝑒𝑙🪽</li>
         </ul>
@@ -449,6 +519,7 @@
 <script>
   let timeLeft;
   let timerInterval;
+  let expectedEndTimestamp;
   let isRunning = false;
   let currentMode = 'pomodoro';
 
@@ -488,11 +559,15 @@
       if (!timeLeft) {
         timeLeft = getDurationForMode(currentMode) * 60;
       }
+      expectedEndTimestamp = Date.now() + timeLeft * 1000;
       timerInterval = setInterval(updateTimer, 1000);
     }
   }
 
   function updateTimer() {
+    const remaining = Math.round((expectedEndTimestamp - Date.now()) / 1000);
+    timeLeft = Math.max(remaining, 0);
+
     if (timeLeft <= 0) {
     clearInterval(timerInterval);
     isRunning = false;
@@ -503,15 +578,33 @@
     });
 
     setTimeout(() => {
-      const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-      const workDone = messages.work || '작업 완료!';
-      const breakDone = messages.break || '휴식 끝!';
-      const message = currentMode === 'pomodoro' ? workDone : breakDone;
-  showMessageBox(message);
-  }, 300);
-  } 
-    else {
-    timeLeft--;
+      if (autoRepeatCheckbox.checked) {
+        if (currentMode === 'pomodoro') {
+          onPomodoroComplete();
+          const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+          const workDone = messages.work || '작업 완료!';
+          showMessageBox(`${workDone}<div class="subtext">${completedCycles}회 반복 중・°꩜</div>`);
+        } else if (currentMode === 'long') {
+          showMessageBox('긴 휴식 완료!');
+        } else {
+          const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+          const breakDone = messages.break || '휴식 끝!';
+          showMessageBox(`${breakDone}<div class="subtext">${completedCycles}회 반복 완료・°꩜</div>`);
+        }
+
+        switchSession();
+      } else {
+        const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+        const workDone = messages.work || '작업 완료!';
+        const breakDone = messages.break || '휴식 끝!';
+        const message = currentMode === 'pomodoro'
+          ? `${workDone}`
+          : `${breakDone}`;
+        showMessageBox(message);
+      }
+    }, 300);
+
+  } else {
     updateTimerDisplay();
   }
 }
@@ -570,6 +663,20 @@
   messageBox.style.display = 'none';
   alarm.pause();
   alarm.currentTime = 0;
+
+  const userTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  let minutes;
+
+  if (currentMode === 'pomodoro') {
+    minutes = userTimes.pomodoro || 25;
+  } else if (currentMode === 'short') {
+    minutes = userTimes.short || 5;
+  } else if (currentMode === 'long') {
+    minutes = userTimes.long || 15;
+  }
+
+  timeLeft = minutes * 60;
+  updateTimerDisplay();
   }
 
   function applyTheme(mode) {
@@ -632,10 +739,10 @@ function applyPreset(presetName) {
     },
     black: {
       '--bg-color': '#000000',
-      '--btn-color': '#FFFFFF',
+      '--btn-color': '#212121',
       '--btn-hover-color': '#333333',
-      '--highlight-color': '#000000',
-      '--btn-text-color': '#000000',
+      '--highlight-color': '#454545',
+      '--btn-text-color': '#FFFFFF',
       '--timer-color': '#FFFFFF',
       '--text-color': '#000000',
     },
@@ -735,7 +842,7 @@ function toggleTheme() {
   } else {
     setTheme('dark');
   }
-  updateThemeToggleButton(); // 버튼 표시도 같이 바꿔야 함
+  updateThemeToggleButton(); 
 }
 
 // 테마 상태에 따라 버튼 표시
@@ -744,6 +851,77 @@ function updateThemeToggleButton() {
   const themeButton = document.getElementById('themeToggleButton');
   
   themeButton.textContent = currentTheme === 'dark' ? '🖤' : '🤍';
+}
+
+// 자동반복기능
+const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
+const heartTracker = document.getElementById('heartTracker');
+
+autoRepeatCheckbox.addEventListener('change', function() {
+  const isChecked = this.checked;
+  localStorage.setItem('autoRepeat', isChecked);
+  heartTracker.style.display = isChecked ? 'flex' : 'none';
+  if (!isChecked) {
+    completedCycles = 0;
+    localStorage.setItem('completedCycles', completedCycles);
+  }
+  updateHearts();
+});
+
+let completedCycles = 0;
+let pomodoroCount = 0;
+
+function updateHearts() {
+  let hearts = '';
+  for (let i = 0; i < 4; i++) {
+    hearts += (i < completedCycles) ? '★彡' : '☆彡';
+  }
+  heartTracker.innerHTML = hearts;
+  localStorage.setItem('completedCycles', completedCycles);
+}
+
+function onPomodoroComplete() {
+  if (autoRepeatCheckbox.checked) {
+    completedCycles++;
+    if (completedCycles > 4) completedCycles = 4;
+    
+    updateHearts();
+  }
+}
+
+function switchSession() {
+  let shouldStart = true;
+
+  if (currentMode === 'pomodoro') {
+    currentMode = 'short';
+
+  } else if (currentMode === 'short') {
+    pomodoroCount++;
+    if (pomodoroCount >= 4) {
+      currentMode = 'long';
+      pomodoroCount = 0;
+    } else {
+      currentMode = 'pomodoro';
+    }
+
+  } else if (currentMode === 'long') {
+    if (autoRepeatCheckbox.checked && completedCycles >= 4) {
+      showMessageBox('ೀ 4회 반복 완료! ✩°｡⋆');
+      completedCycles = 0;
+      updateHearts();
+      currentMode = 'pomodoro';
+      shouldStart = false; 
+    } else {
+      currentMode = 'pomodoro';
+    }
+  }
+
+  timeLeft = getDurationForMode(currentMode) * 60;
+  updateTimerDisplay();
+
+  if (autoRepeatCheckbox.checked && shouldStart) {
+    toggleTimer();
+  }
 }
 
 // 페이지 로딩 시
@@ -809,7 +987,7 @@ if (hasCustomChange) {
 }
 
 
-  // 볼륨 설정 저장 (input 이벤트로 저장되었지만 확실하게 하기 위해)
+  // 볼륨 설정 저장 
   localStorage.setItem('userVolume', volumeControl.value);
 
   // 시간 설정 저장
@@ -819,7 +997,7 @@ if (hasCustomChange) {
     long: parseInt(document.getElementById('longTime').value, 10)
   };
 
-  // **메시지 입력값 가져오기**
+  // 메시지 입력값 가져오기
   let workMessage = document.getElementById('workDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
   let breakMessage = document.getElementById('breakDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
 
@@ -894,6 +1072,19 @@ function getDurationForMode(mode) {
     alarm.volume = parseFloat(savedVolume);
     }
   }
+
+  // 자동 반복 토글 상태 복원
+  const autoRepeatSaved = localStorage.getItem('autoRepeat') === 'true';
+  autoRepeatCheckbox.checked = autoRepeatSaved;
+  heartTracker.style.display = autoRepeatSaved ? 'block' : 'none';
+
+  completedCycles = parseInt(localStorage.getItem('completedCycles')) || 0;
+  updateHearts();
+
+  // 토글 변경 시 상태 저장
+  autoRepeatToggle.addEventListener('change', function() {
+    localStorage.setItem('autoRepeat', autoRepeatToggle.checked);
+  });
 
   //저장 설정
   document.addEventListener('DOMContentLoaded', () => {
