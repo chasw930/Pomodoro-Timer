@@ -317,7 +317,7 @@
       max-width: 80%;
       word-break: break-word;
       width: auto;
-      color: var(--btn-text-color);
+      color: var(--highlight-color);
       
       display: flex; 
       flex-direction: column; 
@@ -583,13 +583,13 @@
           onPomodoroComplete();
           const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
           const workDone = messages.work || '작업 완료!';
-          showMessageBox(`${workDone}<div class="subtext">${completedCycles}회 반복 중・°꩜</div>`);
+          showMessageBox(`${workDone}<div class="subtext">${completedCycles + 1}회 반복 중・°꩜</div>`);
         } else if (currentMode === 'long') {
           showMessageBox('긴 휴식 완료!');
         } else {
           const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
           const breakDone = messages.break || '휴식 끝!';
-          showMessageBox(`${breakDone}<div class="subtext">${completedCycles}회 반복 완료・°꩜</div>`);
+          showMessageBox(`${breakDone}<div class="subtext">${completedCycles + 1}회 반복 완료・°꩜</div>`);
         }
 
         switchSession();
@@ -873,18 +873,19 @@ let pomodoroCount = 0;
 
 function updateHearts() {
   let hearts = '';
+  const displayCount = Math.min(completedCycles, 4); 
+
   for (let i = 0; i < 4; i++) {
-    hearts += (i < completedCycles) ? '★彡' : '☆彡';
+    hearts += (i < displayCount) ? '★彡' : '☆彡';
   }
+
   heartTracker.innerHTML = hearts;
   localStorage.setItem('completedCycles', completedCycles);
 }
 
 function onPomodoroComplete() {
   if (autoRepeatCheckbox.checked) {
-    completedCycles++;
-    if (completedCycles > 4) completedCycles = 4;
-    
+    localStorage.setItem('completedCycles', completedCycles);
     updateHearts();
   }
 }
@@ -893,27 +894,30 @@ function switchSession() {
   let shouldStart = true;
 
   if (currentMode === 'pomodoro') {
-    currentMode = 'short';
+    if (pomodoroCount < 3) {
+      currentMode = 'short';
+    } else {
+      currentMode = 'long';
+      pomodoroCount = 4;
+    }
 
   } else if (currentMode === 'short') {
     pomodoroCount++;
-    if (pomodoroCount >= 4) {
-      currentMode = 'long';
-      pomodoroCount = 0;
-    } else {
-      currentMode = 'pomodoro';
-    }
+    completedCycles++;
+    if (completedCycles > 4) completedCycles = 4;
+    updateHearts();
+
+    currentMode = 'pomodoro';
 
   } else if (currentMode === 'long') {
-    if (autoRepeatCheckbox.checked && completedCycles >= 4) {
-      showMessageBox('ೀ 4회 반복 완료! ✩°｡⋆');
-      completedCycles = 0;
-      updateHearts();
-      currentMode = 'pomodoro';
-      shouldStart = false; 
-    } else {
-      currentMode = 'pomodoro';
-    }
+    showMessageBox('ೀ 4회 반복 완료! ✩°｡⋆');
+    completedCycles = 0;
+    pomodoroCount = 0;
+    localStorage.setItem('completedCycles', completedCycles);
+    updateHearts();
+
+    currentMode = 'pomodoro';
+    shouldStart = false; 
   }
 
   timeLeft = getDurationForMode(currentMode) * 60;
@@ -923,6 +927,18 @@ function switchSession() {
     toggleTimer();
   }
 }
+
+function onPomodoroComplete() {
+  if (autoRepeatCheckbox.checked) {
+    if (pomodoroCount === 3) {
+      pomodoroCount = 4;
+      completedCycles++;
+      if (completedCycles > 4) completedCycles = 4;
+      updateHearts();
+    }
+  }
+}
+
 
 // 페이지 로딩 시
 document.addEventListener('DOMContentLoaded', () => {
@@ -1072,6 +1088,9 @@ function getDurationForMode(mode) {
     alarm.volume = parseFloat(savedVolume);
     }
   }
+
+  // pomodoroCount 복원
+  pomodoroCount = parseInt(localStorage.getItem('pomodoroCount')) || 0;
 
   // 자동 반복 토글 상태 복원
   const autoRepeatSaved = localStorage.getItem('autoRepeat') === 'true';
