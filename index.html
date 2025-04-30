@@ -825,10 +825,13 @@
         const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
         const workDone = messages.work || '작업 완료!';
         const breakDone = messages.break || '휴식 끝!';
-        const message = currentMode === 'pomodoro'
-          ? `${workDone}`
-          : `${breakDone}`;
-        showMessageBox(message);
+
+        if (currentMode === 'pomodoro') {
+          recordFocusSession(getDurationForMode('pomodoro'));
+          showMessageBox(`${workDone}`);
+        } else {
+          showMessageBox(`${breakDone}`);
+        }
       }
     }, 300);
 
