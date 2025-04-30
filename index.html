@@ -637,7 +637,7 @@
     panel.classList.remove('open');
     } else {
     panel.classList.add('open');
-    panel.style.maxHeight = panel.scrollHeight + 'px'; // 패널 안 콘텐츠 높이만큼 자동 확장
+    panel.style.maxHeight = panel.scrollHeight + 'px';
     }
   }
 
@@ -857,14 +857,26 @@ function updateThemeToggleButton() {
 const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
 const heartTracker = document.getElementById('heartTracker');
 
-autoRepeatCheckbox.addEventListener('change', function() {
-  const isChecked = this.checked;
-  localStorage.setItem('autoRepeat', isChecked);
-  heartTracker.style.display = isChecked ? 'flex' : 'none';
-  if (!isChecked) {
+autoRepeatCheckbox.addEventListener('click', function () {
+  const wasChecked = this.checked;
+  if (!wasChecked) {
     completedCycles = 0;
+    pomodoroCount = 0;
     localStorage.setItem('completedCycles', completedCycles);
+    localStorage.setItem('pomodoroCount', pomodoroCount);
+
+    timeLeft = getDurationForMode('pomodoro') * 60;
+    updateTimerDisplay();
+
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
   }
+
+  localStorage.setItem('autoRepeat', wasChecked);
+  heartTracker.style.display = wasChecked ? 'flex' : 'none';
   updateHearts();
 });
 
