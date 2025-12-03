@@ -903,6 +903,17 @@ function updateTimer() {
         isRunning = false;
         document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     } else {
+        // 🚨 권한 획득을 위한 임시 재생
+        alarm.muted = true; // 소리 안 나도록 음소거
+        alarm.play().then(() => {
+            alarm.pause();
+            alarm.currentTime = 0;
+            alarm.muted = false; // 다시 음소거 해제
+        }).catch(error => {
+            // 재생이 차단될 경우 (첫 클릭이 아닌 경우 발생 가능)
+            console.warn("Autoplay policy prevented initial muted play.");
+        });
+        // ----------------------------------------------------
         isRunning = true;
         document.getElementById('startBtn').innerText = '𝙿𝙰𝚄𝚂𝙴';
 
