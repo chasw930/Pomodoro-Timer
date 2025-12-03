@@ -773,7 +773,7 @@
   function resetTimer() {
     clearInterval(timerInterval);
     isRunning = false;
-    timeLeft = getDurationForMode(currentMode) * 60;
+    timeLeft = getDurationForMode(currentMode) * 1;
     updateTimerDisplay();
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     alarm.pause();
