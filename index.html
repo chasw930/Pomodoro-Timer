@@ -268,7 +268,7 @@
       transition: transform 0.3s ease;     
     }
 
-     /* 자동 반복 텍스트 */
+     /* 자동 반복 텍스트트 */
     .subtext {
       font-size: 0.8em;
       color: gray;
@@ -680,7 +680,7 @@
     for (const [date, data] of Object.entries(stats.daily)) {
       const dateObj = new Date(date);
       if (dateObj >= cutoffDaily) {
-        content += `${date},${data.count},${data.time}\n`;
+        content += `="${date}",${data.count},${data.time}\n`;
       }
     }
 
@@ -690,7 +690,7 @@
         const [y, m] = month.split('-').map(Number);
         const monthDate = new Date(y, m - 1);
         if (monthDate >= cutoffMonthly) {
-          content += `${month},${data.count},${data.time}\n`;
+          content += `="${month}",${data.count},${data.time}\n`;
         }
       }
 
@@ -699,7 +699,7 @@
 
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'pomodoro_stats.xlsx';
+  link.download = 'pomodoro_stats.csv';
   link.click();
 }
 
@@ -745,14 +745,11 @@
       updateStats();
   }
 
-  let timeLeft = 0;
+  let timeLeft;
   let timerInterval;
   let expectedEndTimestamp;
   let isRunning = false;
   let currentMode = 'pomodoro';
-
-  let completedCycles = 0;
-  let pomodoroCount = 0;
 
   const alarm = document.getElementById('alarmSound');
   const volumeControl = document.getElementById('volumeControl');
@@ -762,201 +759,118 @@
   localStorage.setItem('userVolume', volumeControl.value); 
 });
 
-// --- 타이머 디스플레이 업데이트 ---
+
+  function switchMode(mode) {
+    currentMode = mode;
+    const duration = getDurationForMode(mode);
+    timeLeft = duration * 60;
+    updateTimerDisplay();
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`.tab.${mode}`).classList.add('active');
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
+    alarm.pause();
+    alarm.currentTime = 0;
+  }
+
+  function toggleTimer() {
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    } else {
+      isRunning = true;
+      document.getElementById('startBtn').innerText = '𝙿𝙰𝚄𝚂𝙴';
+      if (!timeLeft) {
+        timeLeft = getDurationForMode(currentMode) * 60;
+      }
+      expectedEndTimestamp = Date.now() + timeLeft * 1000;
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+  }
+
+  function updateTimer() {
+    const remaining = Math.round((expectedEndTimestamp - Date.now()) / 1000);
+    timeLeft = Math.max(remaining, 0);
+
+    if (timeLeft <= 0) {
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    
+    alarm.play().catch(error => {
+    console.error('Alarm play error:', error);
+    });
+
+    setTimeout(() => {
+      if (autoRepeatCheckbox.checked) {
+        if (currentMode === 'pomodoro') {
+          onPomodoroComplete();
+          const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+          const workDone = messages.work || '작업 완료!';
+          showMessageBox(`${workDone}<div class="subtext">${completedCycles + 1}회 반복 중・°꩜</div>`);
+        } else if (currentMode === 'long') {
+          showMessageBox('긴 휴식 완료!');
+        } else {
+          const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+          const breakDone = messages.break || '휴식 끝!';
+          showMessageBox(`${breakDone}<div class="subtext">${completedCycles + 1}회 반복 완료・°꩜</div>`);
+        }
+
+        switchSession();
+      } else {
+        const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+        const workDone = messages.work || '작업 완료!';
+        const breakDone = messages.break || '휴식 끝!';
+
+        if (currentMode === 'pomodoro') {
+          recordFocusSession(getDurationForMode('pomodoro'));
+          showMessageBox(`${workDone}`);
+        } else {
+          showMessageBox(`${breakDone}`);
+        }
+      }
+    }, 300);
+
+  } else {
+    updateTimerDisplay();
+  }
+}
+
   function updateTimerDisplay() {
     let minutes = Math.floor(timeLeft / 60);
     let seconds = timeLeft % 60;
     document.getElementById('timer').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }
 
-  // --- 타이머 리셋 ---
   function resetTimer() {
     clearInterval(timerInterval);
     isRunning = false;
-    timeLeft = getDurationForMode(currentMode) * 1;
+    timeLeft = getDurationForMode(currentMode) * 60;
     updateTimerDisplay();
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     alarm.pause();
     alarm.currentTime = 0;
   }
 
-  // 모드 전환 함수 (탭 클릭 시)
-  function switchMode(mode) {
-    currentMode = mode;
-    resetTimer();
-
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelector(`.tab.${mode}`).classList.add('active');
-  }
-
-  // --- onPomodoroComplete 함수 (통계 기록 및 카운트) ---
-function onPomodoroComplete() {
-    const durationMinutes = getDurationForMode('pomodoro');
-    recordFocusSession(durationMinutes);
-
-    if (autoRepeatCheckbox.checked) {
-    localStorage.setItem('completedCycles', completedCycles);
-    updateHearts();
-  }
-
-    pomodoroCount++; 
-    if (pomodoroCount > 4) {
-        pomodoroCount = 1; 
-        completedCycles++;
-    }
-    
-    if (document.getElementById('autoRepeatToggle').checked) {
-        updateHearts();
-    }
-}
-
-// --- switchSession 함수 (다음 모드 전환) ---
-function switchSession() {
-    let nextMode;
-    
-    // pomodoroCount는 이미 onPomodoroComplete에서 증가된 상태
-    if (currentMode === 'pomodoro') {
-        if (pomodoroCount % 4 === 0) {
-            nextMode = 'long';
-        } else {
-            nextMode = 'short';
-        }
-    } else { // 현재가 휴식 모드였다면 다음은 항상 뽀모도로
-        nextMode = 'pomodoro';
-    }
-
-    switchMode(nextMode);
-}
-
-// --- updateHearts 함수 ---
-function updateHearts() {
-    let hearts = '';
-    const displayCount = pomodoroCount % 4 === 0 && pomodoroCount !== 0 ? 4 : pomodoroCount % 4;
-    
-    for (let i = 0; i < 4; i++) {
-        hearts += (i < displayCount) ? '★彡' : '☆彡';
-    }
-
-    document.getElementById('heartTracker').innerHTML = hearts;
-    localStorage.setItem('pomodoroCount', pomodoroCount);
-    localStorage.setItem('completedCycles', completedCycles);
-}
-function updateTimer() {
-    const remaining = Math.round((expectedEndTimestamp - Date.now()) / 1000);
-    timeLeft = Math.max(remaining, 0);
-
-    // ⭐ 타이머 만료 시 (주요 if 블록) ⭐
-    if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        isRunning = false;
-        document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
-        
-        alarm.play().catch(error => {
-            console.error('Alarm play error:', error);
-        });
-
-        const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
-
-        if (currentMode === 'pomodoro') {
-            onPomodoroComplete(); // 통계 기록 및 카운트 증가
-        } 
-        
-        switchSession(); // 다음 세션으로 무조건 전환 및 시간 설정
-
-        const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-        const workDone = messages.work || '작업 완료!';
-        const breakDone = messages.break || '휴식 끝!';
-        let displayMessage = '';
-
-        if (currentMode !== 'pomodoro') {
-            displayMessage = `${workDone}`; // 작업 완료 메시지
-        } else {
-            displayMessage = `${breakDone}`; // 휴식 끝 메시지
-        } 
-        
-        // --- 자동 반복 및 메시지 추가 로직 ---
-        if (autoRepeatCheckbox.checked) {
-            if (currentMode !== 'pomodoro') { // 다음 모드가 휴식이면 (뽀모도로 완료 직후)
-                displayMessage += `<div class="subtext">${pomodoroCount}회 반복 중・°꩜</div>`;
-            }
-        
-            // ⭐ 다음 세션이 뽀모도로이고, 현재 뽀모도로 카운트가 1이면 (긴 휴식 직후)
-            if (currentMode === 'pomodoro' && pomodoroCount === 1) {
-                displayMessage += `\n<div class="subtext">${completedCycles}회 사이클 완료・°꩜</div>`;
-            }
-            
-            toggleTimer(); // 자동 반복 시작
-        }
-
-        showMessageBox(displayMessage); // 메시지 표시 (자동 반복과 상관없이 표시됨)
-
-    // ⭐ 타이머가 아직 남았을 경우 (주요 if 블록의 else) ⭐
-    } else {
-        updateTimerDisplay();
-    }
-}
-
-// 타이머 시작/정지 토글 함수
-  function toggleTimer() {
-    if (isRunning) {
-        clearInterval(timerInterval);
-        isRunning = false;
-        document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
-    } else {
-        
-        isRunning = true;
-        document.getElementById('startBtn').innerText = '𝙿𝙰𝚄𝚂𝙴';
-
-        expectedEndTimestamp = Date.now() + timeLeft * 1000;
-        timerInterval = setInterval(updateTimer, 1000);
-    }
-  }
-
-  function getDurationForMode(mode) {
-    const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    const pomodoro = parseInt(document.getElementById('pomodoroTime').value, 10) || savedTimes.pomodoro || 25;
-    const short = parseInt(document.getElementById('shortTime').value, 10) || savedTimes.short || 5;
-    const long = parseInt(document.getElementById('longTime').value, 10) || savedTimes.long || 15;
-    return mode === 'pomodoro' ? pomodoro : mode === 'short' ? short : long;
-}
-
-// 자동반복기능
-const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
-const heartTracker = document.getElementById('heartTracker');
-
-autoRepeatCheckbox.addEventListener('click', function () {
-    const wasChecked = this.checked;
-    
-    if (!wasChecked) {
-        // 반복 해제 시 초기화
-        completedCycles = 0;
-        pomodoroCount = 0;
-        localStorage.setItem('completedCycles', completedCycles);
-        localStorage.setItem('pomodoroCount', pomodoroCount);
-        
-        // 타이머 초기 모드로 재설정
-        switchMode('pomodoro'); // switchMode는 이미 타이머를 멈추고 시간을 초기화하는 로직이 있음
-    }
-
-    localStorage.setItem('autoRepeat', wasChecked);
-    heartTracker.style.display = wasChecked ? 'flex' : 'none';
-    updateHearts();
-});
-
- function toggleOptions() {
+  function toggleOptions() {
     const panel = document.getElementById('optionsPanel');
     const savedMessages = JSON.parse(localStorage.getItem('userMessages') || '{}');
     document.getElementById('workDoneMessage').value = savedMessages.work || '작업 끝!';
     document.getElementById('breakDoneMessage').value = savedMessages.break || '휴식 끝!';
 
-    if (panel.classList.contains('open')) {
-        panel.style.maxHeight = '0';
-        panel.classList.remove('open');
+
+   if (panel.classList.contains('open')) {
+    panel.style.maxHeight = '0';
+    panel.classList.remove('open');
     } else {
-        panel.classList.add('open');
-        panel.style.maxHeight = panel.scrollHeight + 'px';
+    panel.classList.add('open');
+    panel.style.maxHeight = panel.scrollHeight + 'px';
     }
-}
+  }
 
   function toggleSection(id) {
     const section = document.getElementById(id);
@@ -1170,6 +1084,108 @@ function updateThemeToggleButton() {
   themeButton.textContent = currentTheme === 'dark' ? '🖤' : '🤍';
 }
 
+// 자동반복기능
+const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
+const heartTracker = document.getElementById('heartTracker');
+
+autoRepeatCheckbox.addEventListener('click', function () {
+  const wasChecked = this.checked;
+  if (!wasChecked) {
+    completedCycles = 0;
+    pomodoroCount = 0;
+    localStorage.setItem('completedCycles', completedCycles);
+    localStorage.setItem('pomodoroCount', pomodoroCount);
+
+    timeLeft = getDurationForMode('pomodoro') * 60;
+    updateTimerDisplay();
+
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
+    }
+  }
+
+  localStorage.setItem('autoRepeat', wasChecked);
+  heartTracker.style.display = wasChecked ? 'flex' : 'none';
+  updateHearts();
+});
+
+let completedCycles = 0;
+let pomodoroCount = 0;
+
+function updateHearts() {
+  let hearts = '';
+  const displayCount = Math.min(completedCycles, 4); 
+
+  for (let i = 0; i < 4; i++) {
+    hearts += (i < displayCount) ? '★彡' : '☆彡';
+  }
+
+  heartTracker.innerHTML = hearts;
+  localStorage.setItem('completedCycles', completedCycles);
+}
+
+function onPomodoroComplete() {
+  if (autoRepeatCheckbox.checked) {
+    localStorage.setItem('completedCycles', completedCycles);
+    updateHearts();
+  }
+}
+
+function switchSession() {
+  let shouldStart = true;
+
+  if (currentMode === 'pomodoro') {
+    const pomodoroMinutes = getDurationForMode('pomodoro');
+    recordFocusSession(pomodoroMinutes);
+
+    if (pomodoroCount < 3) {
+      currentMode = 'short';
+    } else {
+      currentMode = 'long';
+      pomodoroCount = 4;
+    }
+
+  } else if (currentMode === 'short') {
+    pomodoroCount++;
+    completedCycles++;
+    if (completedCycles > 4) completedCycles = 4;
+    updateHearts();
+
+    currentMode = 'pomodoro';
+
+  } else if (currentMode === 'long') {
+    showMessageBox('ೀ 4회 반복 완료! ✩°｡⋆');
+    completedCycles = 0;
+    pomodoroCount = 0;
+    localStorage.setItem('completedCycles', completedCycles);
+    updateHearts();
+
+    currentMode = 'pomodoro';
+    shouldStart = false; 
+  }
+
+  timeLeft = getDurationForMode(currentMode) * 60;
+  updateTimerDisplay();
+
+  if (autoRepeatCheckbox.checked && shouldStart) {
+    toggleTimer();
+  }
+}
+
+function onPomodoroComplete() {
+  if (autoRepeatCheckbox.checked) {
+    if (pomodoroCount === 3) {
+      pomodoroCount = 4;
+      completedCycles++;
+      if (completedCycles > 4) completedCycles = 4;
+      updateHearts();
+    }
+  }
+}
+
+
 // 페이지 로딩 시
 document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('themeMode') || 'system';
@@ -1232,6 +1248,7 @@ if (hasCustomChange) {
   }
 }
 
+
   // 볼륨 설정 저장 
   localStorage.setItem('userVolume', volumeControl.value);
 
@@ -1240,7 +1257,7 @@ if (hasCustomChange) {
     pomodoro: parseInt(document.getElementById('pomodoroTime').value, 10),
     short: parseInt(document.getElementById('shortTime').value, 10),
     long: parseInt(document.getElementById('longTime').value, 10)
-};
+  };
 
   // 메시지 입력값 가져오기
   let workMessage = document.getElementById('workDoneMessage').value.replace(/\r\n/g, '\n').slice(0, 30);
@@ -1258,46 +1275,65 @@ if (hasCustomChange) {
   resetTimer();
 }
 
-function loadUserStyles() {
-    // 1. CSS 스타일 로드
-    const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
-    const mapping = {   
-        '--bg-color': 'bgColor',
-        '--btn-color': 'btnColor',
-        '--btn-hover-color': 'btnHoverColor',
-        '--highlight-color': 'highlightColor',
-        '--btn-text-color': 'btnTextColor',
-        '--timer-color': 'timerColor',
-        '--btn-font-size': 'btnFontSize',
-        '--timer-font-size': 'timerFontSize'
-    };
+function getDurationForMode(mode) {
+  const savedTimes = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  
+  const pomodoro = parseInt(document.getElementById('pomodoroTime').value, 10) 
+                  || savedTimes.pomodoro 
+                  || 25;
 
- for (const variable in styleMap) {
-        document.documentElement.style.setProperty(variable, styleMap[variable]);
-        const inputId = mapping[variable];
-        if (inputId) {
-            const input = document.getElementById(inputId);
-            if (input) input.value = styleMap[variable].replace('px', '');
-        }
-    }
+  const short = parseInt(document.getElementById('shortTime').value, 10) 
+                || savedTimes.short 
+                || 5;
 
- // 2. 시간/메시지/볼륨 로드 (UI 입력 필드 채우기)
-    const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    document.getElementById('pomodoroTime').value = times.pomodoro || 25;
-    document.getElementById('shortTime').value = times.short || 5;
-    document.getElementById('longTime').value = times.long || 15;
+  const long = parseInt(document.getElementById('longTime').value, 10) 
+               || savedTimes.long 
+               || 15;
 
-    const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-    document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
-    document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
-
-    const savedVolume = localStorage.getItem('userVolume');
-    // volumeControl 및 alarm 객체가 정의되어 있다고 가정
-    if (savedVolume !== null) {
-        volumeControl.value = savedVolume;
-        alarm.volume = parseFloat(savedVolume);
-    }
+  return mode === 'pomodoro' ? pomodoro
+       : mode === 'short' ? short
+       : long;
 }
+
+  function loadUserStyles() {
+  const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+
+  const mapping = {   
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--btn-font-size': 'btnFontSize',
+    '--timer-font-size': 'timerFontSize'
+  };
+
+  for (const variable in styleMap) {
+    document.documentElement.style.setProperty(variable, styleMap[variable]);
+    const inputId = mapping[variable];
+    if (inputId) {
+      const input = document.getElementById(inputId);
+      if (input) input.value = styleMap[variable].replace('px', '');
+    }
+  }
+
+  // 시간/메시지/볼륨은 항상 불러오기
+  const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
+  document.getElementById('pomodoroTime').value = times.pomodoro || 25;
+  document.getElementById('shortTime').value = times.short || 5;
+  document.getElementById('longTime').value = times.long || 15;
+
+  const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
+  document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
+  document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
+
+  const savedVolume = localStorage.getItem('userVolume');
+  if (savedVolume !== null) {
+    volumeControl.value = savedVolume;
+    alarm.volume = parseFloat(savedVolume);
+    }
+  }
 
   // pomodoroCount 복원
   pomodoroCount = parseInt(localStorage.getItem('pomodoroCount')) || 0;
@@ -1310,75 +1346,68 @@ function loadUserStyles() {
   completedCycles = parseInt(localStorage.getItem('completedCycles')) || 0;
   updateHearts();
 
+  // 토글 변경 시 상태 저장
+  autoRepeatToggle.addEventListener('change', function() {
+    localStorage.setItem('autoRepeat', autoRepeatToggle.checked);
+  });
+
   //저장 설정
   document.addEventListener('DOMContentLoaded', () => {
-    // 1. 테마 로드
-    const savedTheme = localStorage.getItem('themeMode') || 'system';
-    applyTheme(savedTheme);
-    updateThemeToggleButton();
+  const savedTheme = localStorage.getItem('themeMode') || 'system';
+  applyTheme(savedTheme);
+  updateThemeToggleButton();
 
-    const savedPreset = localStorage.getItem('selectedPreset');
-    const savedUserStyles = localStorage.getItem('userStyles');
-    const presetListItems = document.querySelectorAll('.preset-list li');
-    const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
-    const heartTracker = document.getElementById('heartTracker');
+  const savedPreset = localStorage.getItem('selectedPreset');
+  const savedUserStyles = localStorage.getItem('userStyles');
 
-    // 2. 프리셋 클릭 이벤트 리스너 설정
+  const presetListItems = document.querySelectorAll('.preset-list li');
+
+  presetListItems.forEach(li => {
+    li.addEventListener('click', () => {
+      const presetName = li.getAttribute('data-preset');
+      applyPreset(presetName);
+
+      // 선택 강조 표시
+      presetListItems.forEach(item => {
+        item.classList.remove('selected');
+      });
+      li.classList.add('selected');
+    });
+  });
+
+  if (savedPreset && savedUserStyles) {
+    applyPreset(savedPreset);
+    loadUserStyles(true);
+
     presetListItems.forEach(li => {
-        li.addEventListener('click', () => {
-            const presetName = li.getAttribute('data-preset');
-            applyPreset(presetName);
-
-            // 선택 강조 표시
-            presetListItems.forEach(item => {
-                item.classList.remove('selected');
-            });
-            li.classList.add('selected');
-        });
+      if (li.getAttribute('data-preset') === savedPreset) {
+        li.classList.add('selected');
+      } else {
+        li.classList.remove('selected');
+      }
     });
 
-    // 3. 프리셋/사용자 스타일 및 시간/메시지/볼륨 로드
-    if (savedPreset && savedUserStyles) {
-        applyPreset(savedPreset);
-        loadUserStyles(true); 
+  } else {
+    loadUserStyles();
+  }
 
-        // 선택된 프리셋 UI 강조 표시
-        presetListItems.forEach(li => {
-            if (li.getAttribute('data-preset') === savedPreset) {
-                li.classList.add('selected');
-            } else {
-                li.classList.remove('selected');
-            }
-        });
-    } else {
-        loadUserStyles();
-    }
+  const savedVolume = localStorage.getItem('userVolume');
+  if (savedVolume !== null) {
+    alarm.volume = parseFloat(savedVolume);
+    volumeControl.value = savedVolume;
+  }
 
-    // ⭐ 4. 카운터 및 자동 반복 상태 복원 (이동된 로직) ⭐
-    pomodoroCount = parseInt(localStorage.getItem('pomodoroCount')) || 0;
-    completedCycles = parseInt(localStorage.getItem('completedCycles')) || 0;
+  resetTimer();
 
-    const autoRepeatSaved = localStorage.getItem('autoRepeat') === 'true';
-    if (autoRepeatCheckbox) {
-        autoRepeatCheckbox.checked = autoRepeatSaved;
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', (e) => {
+    const currentTheme = localStorage.getItem('themeMode') || 'system';
+    if (currentTheme === 'system') {
+      applyTheme('system');
     }
-    if (heartTracker) {
-        heartTracker.style.display = autoRepeatSaved ? 'flex' : 'none';
-    }
-    
-    // 5. 타이머 및 UI 최종 초기화
-    switchMode('pomodoro'); // 초기 시간 설정 및 UI 업데이트 (resetTimer 포함)
-    updateHearts();        // 로드된 카운트에 맞춰 하트 UI 업데이트
-    updateStats();         // 통계 UI 업데이트
-    
-    // 6. 시스템 테마 변경 감지
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', (e) => {
-        const currentTheme = localStorage.getItem('themeMode') || 'system';
-        if (currentTheme === 'system') {
-            applyTheme('system');
-        }
-    });
+  });
+
+  updateStats();
 });
 </script>
 </body>
