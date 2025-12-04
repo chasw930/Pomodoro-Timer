@@ -151,7 +151,7 @@ function resetTimer(isManual = true) { 
     clearInterval(timerInterval);
     isRunning = false;
 
-    timeLeft = getDurationForMode(currentMode) * 1;
+    timeLeft = getDurationForMode(currentMode) * 60;
     updateTimerDisplay();
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     
