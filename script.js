@@ -155,7 +155,7 @@ function resetTimer(isManual = true) { 
     updateTimerDisplay();
     document.getElementById('startBtn').innerText = '𝚂𝚃𝙰𝚁𝚃';
     
-    // ⭐⭐ 수동 리셋 시 필요한 모든 초기화/UI/알람 로직을 한 번에 처리합니다. ⭐⭐
+    // 수동 리셋 시 필요한 모든 초기화/UI/알람 로직을 한 번에 처리합니다.
     if (isManual) { 
         // 1. 카운터 초기화
         pomodoroCount = 0;
@@ -420,6 +420,41 @@ autoRepeatCheckbox.addEventListener('click', function () {
   document.documentElement.setAttribute('data-theme', finalMode);
 }
 
+// 실시간 컬러 설정을 위한 매핑(ColorPickers)
+const colorMapping = {
+    '--bg-color': 'bgColor',
+    '--btn-color': 'btnColor',
+    '--btn-hover-color': 'btnHoverColor',
+    '--highlight-color': 'highlightColor',
+    '--btn-text-color': 'btnTextColor',
+    '--timer-color': 'timerColor',
+    '--general-shadow-color': 'generalShadowColor',
+    '--timer-shadow-color': 'timerShadowColor' 
+};
+
+// 2. 초기화 함수 정의 (이벤트 리스너를 설정)
+function initializeColorPickers() {
+    // colorMapping 객체를 사용하여 모든 색상 input에 리스너 설정
+    for (const cssVar in colorMapping) {
+        const inputId = colorMapping[cssVar];
+        const inputElement = document.getElementById(inputId);
+
+        if (inputElement) {
+            inputElement.addEventListener('input', (e) => {
+                const newColor = e.target.value;
+
+                // 1. 실시간 CSS 변수 적용
+                document.documentElement.style.setProperty(cssVar, newColor);
+                
+                // 2. localStorage에 저장
+                const styles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+                styles[cssVar] = newColor;
+                localStorage.setItem('userStyles', JSON.stringify(styles));
+            });
+        }
+    }
+}
+
 // 프리셋 설정
 function applyPreset(presetName) {
   const presetColors = {
@@ -430,6 +465,8 @@ function applyPreset(presetName) {
       '--highlight-color': '#FF6699',
       '--btn-text-color': '#FF6699',
       '--timer-color': '#FF3366',
+      '--general-shadow-color': '#FFD1DC',
+      '--timer-shadow-color': '#FFD1DC'
     },
     blue: {
       '--bg-color': '#D0E8FF',
@@ -438,6 +475,8 @@ function applyPreset(presetName) {
       '--highlight-color': '#3399FF',
       '--btn-text-color': '#3399FF',
       '--timer-color': '#0066CC',
+      '--general-shadow-color': '#D0E8FF',
+      '--timer-shadow-color': '#D0E8FF'
     },
     yellow: {
       '--bg-color': '#FFF9DB', 
@@ -447,6 +486,8 @@ function applyPreset(presetName) {
       '--btn-text-color': '#8D6E63', 
       '--timer-color': '#FFA000', 
       '--text-color': '#5C4033',
+      '--general-shadow-color': '#8D6E63',
+      '--timer-shadow-color': '#8D6E63'
       },
     green: {
       '--bg-color': '#D7EAD3',
@@ -455,6 +496,8 @@ function applyPreset(presetName) {
       '--highlight-color': '#3E6543',
       '--btn-text-color': '#D7EAD3',
       '--timer-color': '#2C4B32',
+      '--general-shadow-color': '#D7EAD3',
+      '--timer-shadow-color': '#D7EAD3'
     },
     black: {
       '--bg-color': '#000000',
@@ -464,6 +507,8 @@ function applyPreset(presetName) {
       '--btn-text-color': '#FFFFFF',
       '--timer-color': '#FFFFFF',
       '--text-color': '#000000',
+      '--general-shadow-color': '#FFFFFF',
+      '--timer-shadow-color': '#212121'
     },
     white: {
       '--bg-color': '#FFFFFF',
@@ -472,6 +517,8 @@ function applyPreset(presetName) {
       '--highlight-color': '#000000',
       '--btn-text-color': '#FFFFFF',
       '--timer-color': '#000000',
+      '--general-shadow-color': '#FFFFFF',
+      '--timer-shadow-color': '#FFFFFF'
     },
     pinkchoco: {
       '--bg-color': '#FFD1DC',
@@ -480,25 +527,31 @@ function applyPreset(presetName) {
       '--highlight-color': '#8B4513',
       '--btn-text-color': '#FFD1DC',
       '--timer-color': '#A0522D',
+      '--general-shadow-color': '#FFD1DC',
+      '--timer-shadow-color': '#FFD1DC'
     },
     tomato: {
-  '--bg-color': '#FF6347',
-  '--btn-color': '#228B22', 
-  '--btn-hover-color': '#2E8B57', 
-  '--highlight-color': '#228B22', 
-  '--btn-text-color': '#FFFFFF',   
-  '--timer-color': '#006400',      
-  '--text-color': '#2E2E2E',       
+      '--bg-color': '#FF6347',
+      '--btn-color': '#228B22', 
+      '--btn-hover-color': '#2E8B57', 
+      '--highlight-color': '#228B22', 
+      '--btn-text-color': '#FFFFFF',   
+      '--timer-color': '#006400',      
+      '--text-color': '#2E2E2E',
+      '--general-shadow-color': '#FF6347',
+      '--timer-shadow-color': '#FF6347'     
     },
     angel: {
-  '--bg-color': '#FFFFFF',      
-  '--btn-color': '#E7F3F8',    
-  '--btn-hover-color': '#A0BACF', 
-  '--highlight-color': '#94C6E0', 
-  '--btn-text-color': '#5281AC',  
-  '--timer-color': '#5084AC', 
-  '--text-color': '#2E2E2E', 
-  },
+      '--bg-color': '#FFFFFF',      
+      '--btn-color': '#E7F3F8',    
+      '--btn-hover-color': '#A0BACF', 
+      '--highlight-color': '#94C6E0', 
+      '--btn-text-color': '#5281AC',  
+      '--timer-color': '#5084AC', 
+      '--text-color': '#2E2E2E', 
+      '--general-shadow-color': '#E7F3F8',
+      '--timer-shadow-color': '#E7F3F8'  
+      },
   };
 
   const colors = presetColors[presetName];
@@ -521,7 +574,9 @@ function applyPreset(presetName) {
     '--btn-text-color': 'btnTextColor',
     '--timer-color': 'timerColor',
     '--btn-font-size': 'btnFontSize',
-    '--timer-font-size': 'timerFontSize'
+    '--timer-font-size': 'timerFontSize',
+    '--general-shadow-color': 'generalShadowColor', 
+    '--timer-shadow-color': 'timerShadowColor'
   };
 
   for (const variable in colors) {
@@ -572,13 +627,6 @@ function updateThemeToggleButton() {
   themeButton.textContent = currentTheme === 'dark' ? '🖤' : '🤍';
 }
 
-// 페이지 로딩 시
-document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('themeMode') || 'system';
-  applyTheme(savedTheme);
-  updateThemeToggleButton();
-});
-
   function applyOptions() {
   
     const styleInputs = {
@@ -590,6 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
     '--timer-color': 'timerColor',
     '--btn-font-size': 'btnFontSize',
     '--timer-font-size': 'timerFontSize',
+    '--general-shadow-color': 'generalShadowColor', 
+    '--timer-shadow-color': 'timerShadowColor'
     };
 
     let currentStyleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
@@ -663,6 +713,17 @@ if (hasCustomChange) {
 function loadUserStyles() {
     // 1. CSS 스타일 로드
     const styleMap = JSON.parse(localStorage.getItem('userStyles') || '{}');
+
+    const defaultShadowStyles = {
+        '--timer-shadow-color': '#FFFFFF',
+        '--general-shadow-color': '#ffffffff'
+    };
+    
+    const mergedStyles = { 
+        ...defaultShadowStyles, 
+        ...styleMap 
+    };
+
     const mapping = {   
         '--bg-color': 'bgColor',
         '--btn-color': 'btnColor',
@@ -671,33 +732,88 @@ function loadUserStyles() {
         '--btn-text-color': 'btnTextColor',
         '--timer-color': 'timerColor',
         '--btn-font-size': 'btnFontSize',
-        '--timer-font-size': 'timerFontSize'
+        '--timer-font-size': 'timerFontSize',
+        '--general-shadow-color': 'generalShadowColor',
+        '--timer-shadow-color': 'timerShadowColor'
     };
 
- for (const variable in styleMap) {
-        document.documentElement.style.setProperty(variable, styleMap[variable]);
-        const inputId = mapping[variable];
-        if (inputId) {
-            const input = document.getElementById(inputId);
-            if (input) input.value = styleMap[variable].replace('px', '');
+    const savedBgImage = localStorage.getItem('customBgImage');
+    const savedMimeType = localStorage.getItem('customBgMimeType');
+    const preserveBgColor = savedBgImage && (savedMimeType === 'image/png' || savedMimeType === 'image/webp');
+
+    const timerBox = document.getElementById('timer-box');
+
+    // 2. 타이머 박스(has-bg-image) 클래스 제어
+    if (timerBox) {
+        if (savedBgImage) {
+            timerBox.classList.add('has-bg-image');
+        } else {
+            timerBox.classList.remove('has-bg-image');
         }
     }
 
- // 2. 시간/메시지/볼륨 로드 (UI 입력 필드 채우기)
+    // 3. CSS 변수 복원 루프
+    for (const variable in mergedStyles) {
+        const value = mergedStyles[variable];
+        // A. JPEG 배경 이미지 처리 (transparent 강제)
+        if (savedBgImage && variable === '--bg-color' && !preserveBgColor) {
+            document.documentElement.style.setProperty(variable, 'transparent'); // jpg면 배경색 투명화처리
+            
+            // 입력 필드 복원 (UI)
+            const inputId = mapping[variable];
+            if (inputId) {
+                const input = document.getElementById(inputId);
+                if (input) input.value = styleMap[variable];
+            }
+            continue; // 다른 처리를 건너뛰고 다음 변수로 이동
+        }
+        
+        // B. 나머지 스타일 적용 (PNG 배경색 포함)
+        document.documentElement.style.setProperty(variable, value);
+        
+        const inputId = mapping[variable];
+        if (inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = styleMap[variable].replace('px', '');
+            }
+        }
+    }
+
+    // 4. 배경 이미지 CSS 스타일 복원 (BODY에 단 한번만 실행)
+    if (savedBgImage) {
+        document.body.style.backgroundImage = `url('${savedBgImage}')`;
+        document.body.style.backgroundSize = 'cover'; 
+        document.body.style.backgroundPosition = 'center center'; 
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundRepeat = 'no-repeat';
+    }
+
+    // 2. 시간/메시지/볼륨 로드
     const times = JSON.parse(localStorage.getItem('userTimes') || '{}');
-    document.getElementById('pomodoroTime').value = times.pomodoro || 25;
-    document.getElementById('shortTime').value = times.short || 5;
-    document.getElementById('longTime').value = times.long || 15;
+    const pomodoroInput = document.getElementById('pomodoroTime');
+    if (pomodoroInput) pomodoroInput.value = times.pomodoro || 25;
+    
+    const shortInput = document.getElementById('shortTime');
+    if (shortInput) shortInput.value = times.short || 5;
+    
+    const longInput = document.getElementById('longTime');
+    if (longInput) longInput.value = times.long || 15;
 
     const messages = JSON.parse(localStorage.getItem('userMessages') || '{}');
-    document.getElementById('workDoneMessage').value = messages.work || '작업 끝!';
-    document.getElementById('breakDoneMessage').value = messages.break || '휴식 끝!';
+    const workMsgInput = document.getElementById('workDoneMessage');
+    if (workMsgInput) workMsgInput.value = messages.work || '작업 끝!';
+    
+    const breakMsgInput = document.getElementById('breakDoneMessage');
+    if (breakMsgInput) breakMsgInput.value = messages.break || '휴식 끝!';
 
     const savedVolume = localStorage.getItem('userVolume');
-    // volumeControl 및 alarm 객체가 정의되어 있다고 가정
-    if (savedVolume !== null) {
+    if (savedVolume !== null && typeof volumeControl !== 'undefined') {
         volumeControl.value = savedVolume;
-        alarm.volume = parseFloat(savedVolume);
+        // alarm 객체가 있다면 볼륨 적용
+        if (typeof alarm !== 'undefined') {
+            alarm.volume = parseFloat(savedVolume);
+        }
     }
 }
 
@@ -725,7 +841,130 @@ function loadUserStyles() {
     const autoRepeatCheckbox = document.getElementById('autoRepeatToggle');
     const heartTracker = document.getElementById('heartTracker');
 
-    // 2. 프리셋 클릭 이벤트 리스너 설정
+    // 2. 배경 이미지 선택 관련 DOM 요소 (이벤트 리스너가 붙을 요소)
+    const bgImageUpload = document.getElementById('bgImageUpload');
+    const customBgImageButton = document.getElementById('customBgImageButton');
+    const removeBgImageButton = document.getElementById('removeBgImageButton');
+
+    customBgImageButton.addEventListener('click', () => {
+        bgImageUpload.click();
+    });
+
+    bgImageUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const mimeType = file.type; //파일 포맷 확인
+        const outputMimeType = (mimeType === 'image/png' || mimeType === 'image/webp') ? mimeType : 'image/jpeg';
+
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                
+                const MAX_WIDTH = 1920; // 최대 너비 설정
+                const MAX_QUALITY = 0.8; // JPEG 품질
+                
+                const canvas = document.getElementById('resizeCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                let width = img.width;
+                let height = img.height;
+
+                // 1. 이미지 크기가 너무 크면 리사이징 비율 계산
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                if (outputMimeType !== 'image/jpeg') {
+                    // PNG 또는 WebP는 캔버스에 배경색을 칠하지 않고 투명하게 유지
+                    ctx.clearRect(0, 0, width, height); 
+                }
+
+                // 2. 캔버스에 이미지 그리기
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // 3. JPEG 품질을 낮춰 Base64 데이터 추출 (용량 축소)
+                const resizedImageUrl = canvas.toDataURL(outputMimeType, MAX_QUALITY);
+                
+                // 4. 배경 스타일 적용
+                document.body.style.backgroundImage = `url('${resizedImageUrl}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center'; 
+                document.body.style.backgroundAttachment = 'fixed'; 
+                document.body.style.backgroundRepeat = 'no-repeat';
+
+                if (outputMimeType === 'image/jpeg') {
+                    // JPEG (투명도 없음): 기존처럼 배경색을 'transparent'로 강제하여 다른 배경색이 보이지 않게 막음
+                    document.documentElement.style.setProperty('--bg-color', 'transparent'); 
+                } else {
+                    // PNG/WebP (투명도 있음): 배경색을 저장된 원래 색상으로 복원하여 투명 영역 뒤에 보이게 함
+                    const userStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+                    const originalBgColor = userStyles['--bg-color'] || '#f0f0f0';
+                    document.documentElement.style.setProperty('--bg-color', originalBgColor);
+                }
+                
+                const timerBox = document.getElementById('timer-box'); // 요소 참조
+                if (timerBox) {
+                    timerBox.classList.add('has-bg-image'); // #timer-box에 클래스 추가
+                }
+
+                // localStorage 저장
+                try {
+                    localStorage.setItem('customBgImage', resizedImageUrl); 
+                    localStorage.setItem('customBgMimeType', outputMimeType);
+                } catch (e) {
+                    alert('저장된 이미지의 용량이 10MB를 초과했습니다. 더 작은 이미지를 사용해주세요.');
+                    console.error("LocalStorage save failed:", e);
+
+                    document.body.style.backgroundImage = 'none'; // 이미지 제거
+                    const timerBox = document.getElementById('timer-box'); // 요소 참조
+                    if (timerBox) {
+                        timerBox.classList.remove('has-bg-image'); // #timer-box에서 클래스 제거
+                    }
+
+                    localStorage.removeItem('customBgImage'); 
+                    localStorage.removeItem('customBgMimeType');
+                }
+            };
+            img.src = event.target.result; // DataURL을 이미지 객체에 로드
+        };
+        reader.readAsDataURL(file); // 파일 읽기 시작
+    }
+});
+
+// 배경 이미지 삭제 이벤트 리스너
+if (removeBgImageButton) {
+    removeBgImageButton.addEventListener('click', () => {
+        
+        // 1. localStorage에서 이미지 데이터 제거
+        localStorage.removeItem('customBgImage');
+
+        // 2. body 인라인 스타일에서 배경 이미지 및 이미지 타입 정보 제거
+        document.body.style.backgroundImage = 'none';
+        localStorage.removeItem('customBgMimeType');
+
+        const timerBox = document.getElementById('timer-box');
+        if (timerBox) {
+         timerBox.classList.remove('has-bg-image');
+        }
+        
+        // 3. userStyles에서 저장된 원래 배경색으로 복원
+        const userStyles = JSON.parse(localStorage.getItem('userStyles') || '{}');
+        const originalBgColor = userStyles['--bg-color'] || '#f0f0f0'; // 기본값 설정
+        
+        document.documentElement.style.setProperty('--bg-color', originalBgColor);
+        
+        // 4. UI 초기화 (파일 입력 필드 값 초기화)
+        document.getElementById('bgImageUpload').value = null;
+    });
+}
+
+    // 3. 프리셋 클릭 이벤트 리스너 설정
     presetListItems.forEach(li => {
         li.addEventListener('click', () => {
             const presetName = li.getAttribute('data-preset');
@@ -739,7 +978,7 @@ function loadUserStyles() {
         });
     });
 
-    // 3. 프리셋/사용자 스타일 및 시간/메시지/볼륨 로드
+    // 4. 프리셋/사용자 스타일 및 시간/메시지/볼륨 로드
     if (savedPreset && savedUserStyles) {
         applyPreset(savedPreset);
         loadUserStyles(true); 
@@ -756,7 +995,9 @@ function loadUserStyles() {
         loadUserStyles();
     }
 
-    // ⭐ 4. 카운터 및 자동 반복 상태 복원 (이동된 로직) ⭐
+    initializeColorPickers();
+
+    // 5. 카운터 및 자동 반복 상태 복원
     pomodoroCount = parseInt(localStorage.getItem('pomodoroCount')) || 0;
     completedCycles = parseInt(localStorage.getItem('completedCycles')) || 0;
 
@@ -768,12 +1009,12 @@ function loadUserStyles() {
         heartTracker.style.display = autoRepeatSaved ? 'flex' : 'none';
     }
     
-    // 5. 타이머 및 UI 최종 초기화
+    // 6. 타이머 및 UI 최종 초기화
     switchMode('pomodoro'); // 초기 시간 설정 및 UI 업데이트 (resetTimer 포함)
     updateHearts();        // 로드된 카운트에 맞춰 하트 UI 업데이트
     updateStats();         // 통계 UI 업데이트
     
-    // 6. 시스템 테마 변경 감지
+    // 7. 시스템 테마 변경 감지
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', (e) => {
         const currentTheme = localStorage.getItem('themeMode') || 'system';

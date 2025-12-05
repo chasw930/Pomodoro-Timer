@@ -15,12 +15,14 @@
     <button class="tab long" onclick="switchMode('long')">𝐋𝐨𝐧𝐠 𝐁𝐫𝐞𝐚𝐤</button>
   </div>
 
-  <div class="tracker-stats-container">
-    <div id="heartTracker"></div>
-    <button id="totalButton" onclick="openStatsPopup()" class="btn total-button">𝐓𝐨𝐭𝐚𝐥  0★</button>
-  </div>
+  <div id="timer-box">
+    <div class="tracker-stats-container">
+      <div id="heartTracker"></div>
+      <button id="totalButton" onclick="openStatsPopup()" class="btn total-button">𝐓𝐨𝐭𝐚𝐥  0★</button>
+    </div>
 
-  <div id="timer">00:00</div>
+    <div id="timer">00:00</div>
+  </div>
 
   <div class="button-container">
     <div class="button-group">
@@ -86,29 +88,54 @@
 
   <button class="section-button" onclick="toggleSection('colorSettings')">색상 설정</button>
   <div id="colorSettings" class="section-content">
+    <div class="input-group">
+        <label for="bgImageUpload">배경 이미지 설정:</label>
+        <button type="button" id="customBgImageButton" class="option-btn">이미지 불러오기🖼️</button>
+        <button id="removeBgImageButton" class="option-btn">이미지 삭제❌</button>
+        <input type="file" id="bgImageUpload" accept="image/*" style="display: none;">
+    </div>
+    <p class="guide-text">
+      💡이미지는 1920×920~1080px, 10MB이하를 추천합니다.
+    </p>
+
     <div class="option-group">
       <label for="bgColor">배경 색상:</label>
       <input type="color" id="bgColor" value="#f0f0f0">
     </div>
+
     <div class="option-group">
       <label for="btnColor">버튼 색상:</label>
       <input type="color" id="btnColor" value="#4CAF50">
     </div>
+
     <div class="option-group">
       <label for="btnHoverColor">버튼 호버 색상:</label>
       <input type="color" id="btnHoverColor" value="#45a049">
     </div>
+
     <div class="option-group">
       <label for="highlightColor">버튼 강조 색상:</label>
       <input type="color" id="highlightColor" value="#ff9800">
     </div>
+
+    <div class="option-group">
+      <label for="generalShadowColor">통계 그림자 색상:</label>
+      <input type="color" id="generalShadowColor" value="#000000"> 
+    </div>
+
     <div class="option-group">
       <label for="btnTextColor">버튼 텍스트 색상:</label>
       <input type="color" id="btnTextColor" value="#ffffff">
     </div>
+
     <div class="option-group">
       <label for="timerColor">타이머 숫자 색상:</label>
       <input type="color" id="timerColor" value="#000000">
+    </div>
+
+    <div class="option-group">
+      <label for="timerShadowColor">타이머 그림자 색상:</label>
+      <input type="color" id="timerShadowColor" value="#FFFFFF"> 
     </div>
   </div>
 
@@ -183,6 +210,8 @@
   </audio>
 
 <script defer src="script.js"></script>
+
+<canvas id="resizeCanvas" style="display: none;"></canvas>
 
 </body>
 </html>
